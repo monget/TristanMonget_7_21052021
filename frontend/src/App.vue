@@ -1,16 +1,18 @@
 <template>
-  <header>
-    <div class="logo">
-    <router-link to="/">
-      <img alt="Groupomania logo" src="./assets/icon-left-font-monochrome-black.svg">
-    </router-link>
-    </div>
-    <div class="buttons">
-      <router-link to="/registration">s'inscrire</router-link>
-      <router-link to="/connection">se connecter</router-link>
-    </div>
-  </header>
-  <router-view/>
+  <div>
+    <header>
+      <div class="logo">
+        <router-link to="/">
+          <img alt="Groupomania logo" src="./assets/icon-left-font-monochrome-black.svg">
+        </router-link>
+      </div>
+      <div class="buttons">
+        <router-link to="/registration">s'inscrire</router-link>
+        <router-link to="/connection">se connecter</router-link>
+      </div>
+    </header>
+    <router-view/>
+  </div>
 </template>
 
 <style lang="scss">
