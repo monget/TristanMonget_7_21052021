@@ -37,6 +37,9 @@ app.use(cookieSession({
 
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
+const db = require("./models");
+db.sequelize.sync();
+
 /*
 app.use('/api/auth', usersRoutes);
 */
