@@ -1,9 +1,8 @@
 <template>
-  <div>
-    <h1 id="h1">Connexion</h1>
-
+  <main>
     <div class="registration-connection_form">
       <form class="connectionForm" action="" method="post">
+        <h1>Connexion</h1>
         <p>
           <label class="label" for="pseudo">Pseudo :</label>
           <input class="input" type="text" id="pseudo" name="pseudo" required><br /><br />
@@ -15,21 +14,31 @@
         </p>
       </form>
     </div>
-  </div>
+  </main>
 </template>
 
 <style lang="scss" scoped>
+h1 {
+  margin: 0px;
+  padding-bottom: 5%;
+  color: white;
+}
 .connectionForm
 {
-  padding: 2.5% 0%;
-  position: fixed;
-  top: 35%;
-  left: 50%;
-  transform: translateX(-50%);
+  padding: 2%;
+  margin: 50px auto;
   width: 40%;
   background-color: grey;
   border-radius: 30px;
 }
+
+@media (max-width: 425px) {
+  .connectionForm {
+    padding: 5%;
+    width: 65%;
+  }
+}
+
 .connectionForm p
 {
   margin: auto;
