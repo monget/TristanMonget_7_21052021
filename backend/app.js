@@ -6,9 +6,9 @@ const cookieparser = require ('cookie-parser')
 const Keygrip = require('keygrip');
 require('dotenv').config()
 
-/*
+
 const usersRoutes = require('./routes/users');
-*/
+
 
 const app = express();
 
@@ -37,11 +37,10 @@ app.use(cookieSession({
 
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
+app.use('/api/auth', usersRoutes);
+
+
 const db = require("./models");
 db.sequelize.sync();
-
-/*
-app.use('/api/auth', usersRoutes);
-*/
 
 module.exports = app;
