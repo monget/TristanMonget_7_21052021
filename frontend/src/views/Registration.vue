@@ -1,27 +1,65 @@
 <template>
-  <div class="registration-connection_form">
-    <form class="registrationForm" onSubmit="return control(this)" action="" method="post">
-      <h1>Inscription</h1>
-      <p>
-        <label class="label" for="pseudo">Pseudo :</label>
-        <input id="pseudo" class="input" type="text" name="pseudo" required pattern="[-_ A-Za-z0-9]{3,12}" minlength="3" maxlength="12" placeholder="De 3 à 12 caractères">
-        <span id="pseudo_help"></span><br />
-        <label class="label" for="password1">Mot de passe :</label>
-        <input class="input" type="password" id="password1" name="password1" required minlength="6" placeholder="Au moins 6 caractères">
-        <span id="password1_error"></span><br />
-        <label class="label" for="password2">Confirmez le mot de passe :</label>
-        <input class="input" type="password" id="password2" name="password2" required minlength="6" >
-        <span id="password2_error"></span><br />
-        <label class="label" for="email">Adresse email :</label>
-        <input class="input" type="email" id="email" name="email" required pattern="^[a-z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$">
-        <span id="email_help"></span><br />
-        <input class="submitForm" type="submit" name="submit" onclick="control()" value="Valider">
-        <span>Déjà un compte ?</span><br />
-        <router-link to="/connection">Connectez-vous</router-link>
-      </p>
-    </form>
-  </div>
+  <main>
+    <div class="registration-connection_form">
+      <form class="registrationForm"> <!-- onSubmit="return control(this)" action="" method="post" -->
+        <h1>Inscription</h1>
+        <p>
+          <label class="label" for="pseudo">Pseudo :</label>
+          <input id="pseudo" class="input" type="text" name="pseudo" v-model="user.pseudo" required pattern="[-_ A-Za-z0-9]{3,12}" minlength="3" maxlength="12" placeholder="De 3 à 12 caractères">
+          <span id="pseudo_help"></span><br />
+          <label class="label" for="password1">Mot de passe :</label>
+          <input class="input" type="password" id="password1" name="password1" v-model="user.password" required minlength="6" placeholder="Au moins 6 caractères">
+          <span id="password1_error"></span><br />
+          <label class="label" for="password2">Confirmez le mot de passe :</label>
+          <input class="input" type="password" id="password2" name="password2" required minlength="6" >
+          <span id="password2_error"></span><br />
+          <label class="label" for="email">Adresse email :</label>
+          <input class="input" type="email" id="email" name="email" v-model="user.email" required pattern="^[a-z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$">
+          <span id="email_help"></span><br />
+          <input class="submitForm" type="submit" name="submit" @click="saveUser" onclick="control()" value="Valider">
+          <span>Déjà un compte ?</span><br />
+          <router-link to="/connection">Connectez-vous</router-link>
+        </p>
+      </form>
+    </div>
+  </main>
 </template>
+
+<script>
+import UserDataService from "../services/UserDataService";
+
+export default {
+  name: "Registration",
+  data() {
+    return {
+      user: {
+        pseudo: "",
+        published: false
+      },
+      submitted: false
+    };
+  },
+  methods: {
+    saveUser() {
+      var data = {
+        pseudo: this.user.pseudo,
+        password: this.user.password,
+        email: this.user.email,
+      };
+
+      UserDataService.create(data)
+        .then(response => {
+          this.user.id = response.data.id;
+          console.log(response.data);
+          this.submitted = true;
+        })
+        .catch(e => {
+          console.log(e);
+        });
+    },
+  }
+};
+</script>
 
 <style lang="scss" scoped>
 h1 {
