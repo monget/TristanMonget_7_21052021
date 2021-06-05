@@ -1,62 +1,71 @@
 <template>
   <main>
     <div class="registration-connection_form">
-      <form class="registrationForm"> <!-- onSubmit="return control(this)" action="" method="post" -->
+      <Form class="registrationForm" @submit="onSubmit" :validation-schema="schema">
         <h1>Inscription</h1>
         <p>
           <label class="label" for="pseudo">Pseudo :</label>
-          <input id="pseudo" class="input" type="text" name="pseudo" v-model="user.pseudo" required pattern="[-_ A-Za-z0-9]{3,12}" minlength="3" maxlength="12" placeholder="De 3 à 12 caractères">
-          <span id="pseudo_help"></span><br />
-          <label class="label" for="password1">Mot de passe :</label>
-          <input class="input" type="password" id="password1" name="password1" v-model="user.password" required minlength="6" placeholder="Au moins 6 caractères">
-          <span id="password1_error"></span><br />
-          <label class="label" for="password2">Confirmez le mot de passe :</label>
-          <input class="input" type="password" id="password2" name="password2" required minlength="6" >
-          <span id="password2_error"></span><br />
+          <Field id="pseudo" class="input" type="text" name="pseudo" minlength="3" maxlength="12" placeholder="De 3 à 12 caractères"/>
+          <ErrorMessage name="pseudo"/><br />
+          <label class="label" for="password">Mot de passe :</label>
+          <Field class="input" type="password" id="password" name="password" minlength="6" placeholder="Au moins 6 caractères"/>
+          <ErrorMessage name="password"/><br />
+          <label class="label" for="confirm_password">Confirmez le mot de passe :</label>
+          <Field class="input" type="password" id="confirm_password" name="confirm_password" minlength="6"/>
+          <ErrorMessage name="confirm_password"/><br />
           <label class="label" for="email">Adresse email :</label>
-          <input class="input" type="email" id="email" name="email" v-model="user.email" required pattern="^[a-z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$">
-          <span id="email_help"></span><br />
-          <input class="submitForm" type="submit" name="submit" @click="saveUser" onclick="control()" value="Valider">
+          <Field class="input" type="email" id="email" name="email"/>
+          <ErrorMessage name="email"/><br />
+          <button class="submitForm">Valider</button>
           <span>Déjà un compte ?</span><br />
           <router-link to="/connection">Connectez-vous</router-link>
         </p>
-      </form>
+      </Form>
     </div>
   </main>
 </template>
 
 <script>
 import UserDataService from "../services/UserDataService";
+import { Form, Field, ErrorMessage } from 'vee-validate';
+import * as Yup from "yup";
+import router from "../router";
 
 export default {
   name: "Registration",
-  data() {
-    return {
-      user: {
-        pseudo: "",
-        published: false
-      },
-      submitted: false
-    };
+  components: {
+    Form,
+    Field,
+    ErrorMessage,
   },
-  methods: {
-    saveUser() {
-      var data = {
-        pseudo: this.user.pseudo,
-        password: this.user.password,
-        email: this.user.email,
-      };
-
+  setup() {
+    function onSubmit(values) {
+      const data =  {
+        pseudo: values.pseudo,
+        password: values.password,
+        email: values.email
+      }
       UserDataService.create(data)
         .then(response => {
-          this.user.id = response.data.id;
+          localStorage.setItem('pseudo', JSON.stringify(values.pseudo));
+          router.push('/connection');
           console.log(response.data);
-          this.submitted = true;
         })
         .catch(e => {
           console.log(e);
         });
-    },
+    }
+    const schema = Yup.object().shape({
+      pseudo: Yup.string().min(3, "Minimun 3 caractères").max(12, "Maximun 12 caractères").required("Merci de renseigner un pseudo"),
+      email: Yup.string().email("Merci de renseigner un email valide").required("Merci de renseigner un email"),
+      password: Yup.string().min(6, "Minimun 6 caractères").required("Merci de renseigner un mot de passe"),
+      confirm_password: Yup.string().required("Merci de confirmer votre mot de passe")
+        .oneOf([Yup.ref("password")], "Votre mot de passe ne correspond pas"),
+    });
+    return {
+      onSubmit,
+      schema,
+    };
   }
 };
 </script>

@@ -1,27 +1,32 @@
 <template>
   <main>
     <div class="registration-connection_form">
-      <form class="connectionForm"> <!-- action="" method="post" -->
+      <Form class="connectionForm" @submit="onSubmit" :validation-schema="schema">
         <h1>Connexion</h1>
         <p>
           <label class="label" for="pseudo">Pseudo :</label>
-          <input class="input" type="text" id="pseudo" name="pseudo" v-model="user.pseudo" required><br /><br />
+          <Field class="input" type="text" id="pseudo" name="pseudo" v-model="user.pseudo"/>
+          <ErrorMessage name="pseudo"/><br /><br />
           <label class="label" for="password">Mot de passe :</label>
-          <input class="input" type="password" id="password" name="password" v-model="user.password" required><span id="connection_errors"></span><br />
-          <input class="submitForm" type="submit" name="submit" @click="findUser" onclick="control()" value="Connexion">
+          <Field class="input" type="password" id="password" name="password"/>
+          <ErrorMessage name="password"/><br />
+          <button class="submitForm">Connexion</button>
           <span>Pas encore de compte ?</span><br />
           <router-link to="/registration">Inscrivez-vous</router-link>
         </p>
-      </form>
+      </Form>
     </div>
   </main>
 </template>
 
 <script>
 import UserDataService from "../services/UserDataService";
+import { Form, Field, ErrorMessage } from 'vee-validate';
+import * as Yup from "yup";
+import router from "../router";
 
 export default {
-  name: "Connectionr",
+  name: "Connection",
   data() {
     return {
       user: {
@@ -29,27 +34,41 @@ export default {
         token: "",
         published: false
       },
-      submitted: false
     };
   },
-  methods: {
-    findUser() {
-      var data = {
-        pseudo: this.user.pseudo,
-        password: this.user.password
+  components: {
+    Form,
+    Field,
+    ErrorMessage,
+  },
+  setup() {
+    function onSubmit(values) {
+      const data = {
+        pseudo: values.pseudo,
+        password: values.password
       };
-
       UserDataService.find(data)
         .then(response => {
           if (response.data.token) {
           localStorage.setItem('user', JSON.stringify(response.data));
-        }
-          this.submitted = true;
-        })
+          router.push('/');
+        }})
         .catch(e => {
           console.log(e);
         });
-    },
+    }
+    const schema = Yup.object().shape({
+      pseudo: Yup.string().required("Merci de renseigner un pseudo"),
+      password: Yup.string().required("Merci de renseigner un mot de passe"),
+    });
+    return {
+      onSubmit,
+      schema,
+    };
+  },
+  mounted() {
+    if(localStorage.pseudo)
+      this.user.pseudo = JSON.parse(localStorage.pseudo);
   }
 };
 </script>
