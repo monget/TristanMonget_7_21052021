@@ -21,42 +21,21 @@ exports.modify = (req, res, next) => {
 		...req.body,
 		imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
 	} : { ...req.body };*/
-	Publication.findOne({ where: { id: req.params.id } }) // findByPk ??
-		.then(publication => {
-			if (publication == null) { // A contrôler si possible 404 dans le catch mais return toujours un 200
-				res.status(404).send({ message: "Cette publication n'existe pas !" });
-				return res.end();
-			}
-			Publication.update(req.body, {	where: { id: req.params.id }})
-				.then(() => res.status(200).json({ message: 'Publication modifiée !'}))
-				.catch(err => res.status(400).send({ message: err.message }));
-		})
+	Publication.update(req.body, {	where: { id: req.params.id }})
+		.then(() => res.status(200).json({ message: 'Publication modifiée !'}))
 		.catch(err => res.status(400).send({ message: err.message }));
+
 };
 
 exports.delete = (req, res, next) => {
-	Publication.findByPk(req.params.id)
-		.then(publication => {
-			if (publication == null) { // A contrôler si possible 404 dans le catch mais return toujours un 200
-				res.status(404).send({ message: "Cette publication n'existe pas !" });
-				return res.end();
-			}
-			Publication.destroy({	where: { id: req.params.id }})
-				.then(() => res.status(200).json({ message: 'Objet supprimé !'}))
-				.catch(err => res.status(400).send({ message: err.message }));
-		})
-		.catch(err => res.status(500).send({ message: err.message }));
+	Publication.destroy({	where: { id: req.params.id }})
+		.then(() => res.status(200).json({ message: 'Objet supprimé !'}))
+		.catch(err => res.status(400).send({ message: err.message }));
 };
 
 exports.findOne = (req, res, next) => {
   Publication.findByPk(req.params.id)
-		.then(publication => {
-			if (publication == null) { // A contrôler si possible 404 dans le catch mais return toujours un 200
-				res.status(404).send({ message: "Cette publication n'existe pas !" });
-				return res.end();
-			}
-			res.status(200).json(publication);
-		})
+		.then(publication => res.status(200).json(publication))
 		.catch(err => res.status(500).send({ message: err.message }));
 };
 
