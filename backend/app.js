@@ -8,7 +8,7 @@ require('dotenv').config()
 
 
 const usersRoutes = require('./routes/users');
-
+const publicationsRoutes = require('./routes/publications');
 
 const app = express();
 
@@ -38,7 +38,7 @@ app.use(cookieSession({
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use('/api/auth', usersRoutes);
-
+app.use('/api/publications', publicationsRoutes);
 
 const db = require("./models");
 db.sequelize.sync();
