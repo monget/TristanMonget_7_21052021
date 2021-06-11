@@ -29,9 +29,9 @@ exports.login = (req, res, next) => {
       }
 
       const passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
-
+      
       if (!passwordIsValid) {
-        res.writeHead( 401, "Erreur de nom d'utilisateur ou de mot de passe!",{'content-type' : 'text/plain'});
+        res.writeHead( 404, "Erreur de nom d'utilisateur ou de mot de passe!",{'content-type' : 'text/plain'});
         return res.end();
       }
       res.status(200).json({
