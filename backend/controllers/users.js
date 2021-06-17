@@ -14,7 +14,7 @@ exports.signup = (req, res, next) => {
     .catch(err => {
       res.status(500).send({ message: err.message });
     });
-  };
+};
 
 exports.login = (req, res, next) => {
   User.findOne({
@@ -24,14 +24,14 @@ exports.login = (req, res, next) => {
   })
     .then(user => {
       if (!user) {
-        res.writeHead( 404, "Erreur de nom d'utilisateur ou de mot de passe!", {'content-type' : 'text/plain'});
+        res.status(404).send({ message: "Erreur de nom d'utilisateur ou de mot de passe!" });
         return res.end();
       }
 
       const passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
-      
+
       if (!passwordIsValid) {
-        res.writeHead( 404, "Erreur de nom d'utilisateur ou de mot de passe!",{'content-type' : 'text/plain'});
+        res.status(404).send({ message: "Erreur de nom d'utilisateur ou de mot de passe!" });
         return res.end();
       }
       res.status(200).json({
@@ -39,7 +39,7 @@ exports.login = (req, res, next) => {
         pseudo: user.pseudo,
         email: user.email,
         token: jwt.sign(
-            { userId: user._id},
+            { userId: user.id},
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN }
         ),
@@ -48,4 +48,4 @@ exports.login = (req, res, next) => {
     .catch(err => {
       res.status(500).send({ message: err.message });
     });
-  };
+};
