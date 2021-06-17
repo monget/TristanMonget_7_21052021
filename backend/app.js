@@ -9,6 +9,7 @@ require('dotenv').config()
 
 const usersRoutes = require('./routes/users');
 const publicationsRoutes = require('./routes/publications');
+const commentsRoutes = require('./routes/comments');
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use('/api/auth', usersRoutes);
 app.use('/api/publications', publicationsRoutes);
+app.use('/api/comments', commentsRoutes);
 
 const db = require("./models");
 db.sequelize.sync();
