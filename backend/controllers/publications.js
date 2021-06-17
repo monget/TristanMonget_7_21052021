@@ -1,17 +1,19 @@
 const db = require("../models");
+const userId = require("../utils/userId.js")
 const Publication = db.publication;
+const Comment = db.comment;
+const User = db.user;
 const fs = require('fs');
-const jwt = require('jsonwebtoken');
-const publication = require("../models/publication");
 
 exports.create = (req, res, next) => {
   Publication.create({
     title: req.body.title,
 		message: req.body.message,
     attachement: req.body.attachement, //`${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-		like: 0
+		like: 0,
+		userId: userId(req)
   })
-    .then(() => res.status(201).json({ message: 'Publication créé !'}))
+    .then(() => res.status(201).json({ message: 'Publication créé !' }))
     .catch(err => res.status(500).send({ message: err.message }));
 };
 
@@ -21,20 +23,19 @@ exports.modify = (req, res, next) => {
 		...req.body,
 		imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
 	} : { ...req.body };*/
-	Publication.update(req.body, {	where: { id: req.params.id }})
-		.then(() => res.status(200).json({ message: 'Publication modifiée !'}))
+	Publication.update(req.body, { where: { id: req.params.id }})
+		.then(() => res.status(200).json({ message: 'Publication modifiée !' }))
 		.catch(err => res.status(400).send({ message: err.message }));
-
 };
 
 exports.delete = (req, res, next) => {
 	Publication.destroy({	where: { id: req.params.id }})
-		.then(() => res.status(200).json({ message: 'Objet supprimé !'}))
+		.then(() => res.status(200).json({ message: 'Objet supprimé !' }))
 		.catch(err => res.status(400).send({ message: err.message }));
 };
 
 exports.findOne = (req, res, next) => {
-  Publication.findByPk(req.params.id)
+  Publication.findByPk(req.params.id, {include: [{ model: Comment, where: { publicationId: req.params.id }}]})
 		.then(publication => res.status(200).json(publication))
 		.catch(err => res.status(500).send({ message: err.message }));
 };
@@ -50,13 +51,13 @@ exports.like = (req, res, next) => {
 	Publication.findByPk(req.params.id)
 		.then(publication => {
 			if (counter === 1) {
-				publication.increment({ like: 1 }, {	where: { id: req.params.id }})
-					.then(() => res.status(200).json({ message: 'J\'aime !'}))
+				publication.increment({ like: 1 }, { where: { id: req.params.id }})
+					.then(() => res.status(200).json({ message: 'J\'aime !' }))
 					.catch(err => res.status(400).send({ message: err.message }));
 			}
 			else if (counter === 0) {
 				publication.increment({ like: -1 }, {	where: { id: req.params.id }})
-					.then(() => res.status(200).json({ message: 'J\'aime annulé'}))
+					.then(() => res.status(200).json({ message: 'J\'aime annulé' }))
 					.catch(err => res.status(400).send({ message: err.message }));
 			}
 		})
