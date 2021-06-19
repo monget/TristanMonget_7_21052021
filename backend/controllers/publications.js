@@ -9,7 +9,7 @@ exports.create = (req, res, next) => {
   Publication.create({
     title: req.body.title,
 		message: req.body.message,
-    attachement: req.body.attachement, //`${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+    attachement: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
 		like: 0,
 		userId: userId(req)
   })
@@ -18,14 +18,37 @@ exports.create = (req, res, next) => {
 };
 
 exports.modify = (req, res, next) => {
-	/*const publicationObject = req.file ? // Contrôle si req.file existe
+	const publicationObject = req.file ? // Contrôle si req.file existe
 	{ 
 		...req.body,
-		imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-	} : { ...req.body };*/
+		attachement: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+	} : { ...req.body }
+	Publication.findOne({ where: { id: req.params.id }})
+		.then(publication => {
+			if (publication.userId == userId(req)) {
+				if (req.file != undefined) {
+					const filename = publication.attachement.split('/images/')[1];
+					fs.unlinkSync(`images/${filename}`)
+				}
+				Publication.update( publicationObject, { where: { id: req.params.id }})
+					.then(() => res.status(200).json({ message: 'Publication modifiée !' }))
+					.catch(err => res.status(400).json({ message: err.message }));
+
+				/*Publication.update( publicationObject, { where: { id: req.params.id }})
+					.then(() => res.status(200).json({ message: 'Publication modifiée !' }))
+					.catch(err => res.status(400).json({ message: err.message }));*/
+				
+			}
+			else {
+				return res.status(400).json({ message: "Opération interdite !" });
+			}
+		})
+		.catch(error => res.status(400).json({ error }));
+
+		/*
 	Publication.update(req.body, { where: { id: req.params.id }})
 		.then(() => res.status(200).json({ message: 'Publication modifiée !' }))
-		.catch(err => res.status(400).send({ message: err.message }));
+		.catch(err => res.status(400).send({ message: err.message }));*/
 };
 
 exports.delete = (req, res, next) => {
@@ -35,7 +58,7 @@ exports.delete = (req, res, next) => {
 };
 
 exports.findOne = (req, res, next) => {
-  Publication.findByPk(req.params.id, {include: [{ model: Comment, where: { publicationId: req.params.id }}]})
+  Publication.findByPk(req.params.id, {include: [{ model: Comment, required: false, where: { publicationId: req.params.id }}]})
 		.then(publication => res.status(200).json(publication))
 		.catch(err => res.status(500).send({ message: err.message }));
 };
