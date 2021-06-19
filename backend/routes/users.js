@@ -6,7 +6,7 @@ const validator = require('../middleware/validator');
 const check = require('../middleware/checkExist');
 const accountLimit = require('../middleware/accountLimiter');
 
-router.post('/signup', accountLimit, validator.signup, check.user, userCtrl.signup);
+router.post('/signup', accountLimit, check.user, validator.signup, userCtrl.signup);
 router.post('/login', accountLimit, userCtrl.login);
 
 module.exports = router;
