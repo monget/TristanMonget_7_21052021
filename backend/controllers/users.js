@@ -11,17 +11,11 @@ exports.signup = (req, res, next) => {
     password: bcrypt.hashSync(req.body.password, 10)
   })
     .then(() => res.status(201).json({ message: 'Utilisateur créé !'}))
-    .catch(err => {
-      res.status(500).send({ message: err.message });
-    });
+    .catch(err => res.status(500).send({ message: err.message }));
 };
 
 exports.login = (req, res, next) => {
-  User.findOne({
-    where: {
-      pseudo: req.body.pseudo
-    }
-  })
+  User.findOne({ where: { pseudo: req.body.pseudo }})
     .then(user => {
       if (!user) {
         res.status(404).send({ message: "Erreur de nom d'utilisateur ou de mot de passe!" });
@@ -45,7 +39,5 @@ exports.login = (req, res, next) => {
         ),
       })
     })
-    .catch(err => {
-      res.status(500).send({ message: err.message });
-    });
+    .catch(err => res.status(500).send({ message: err.message }));
 };
