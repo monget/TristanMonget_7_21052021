@@ -1,9 +1,11 @@
 const db = require("../models");
-const userId = require("../utils/userId.js")
+const userId = require("../utils/userId.js");
 const Publication = db.publication;
 const Comment = db.comment;
 const User = db.user;
 const fs = require('fs');
+
+const Sequelize = require("sequelize");
 
 exports.create = (req, res, next) => {
   Publication.create({
@@ -32,39 +34,65 @@ exports.modify = (req, res, next) => {
 				}
 				Publication.update( publicationObject, { where: { id: req.params.id }})
 					.then(() => res.status(200).json({ message: 'Publication modifiée !' }))
-					.catch(err => res.status(400).json({ message: err.message }));
-
-				/*Publication.update( publicationObject, { where: { id: req.params.id }})
-					.then(() => res.status(200).json({ message: 'Publication modifiée !' }))
-					.catch(err => res.status(400).json({ message: err.message }));*/
-				
+					.catch(err => res.status(400).json({ message: err.message }));		
 			}
 			else {
 				return res.status(400).json({ message: "Opération interdite !" });
 			}
 		})
 		.catch(error => res.status(400).json({ error }));
-
-		/*
-	Publication.update(req.body, { where: { id: req.params.id }})
-		.then(() => res.status(200).json({ message: 'Publication modifiée !' }))
-		.catch(err => res.status(400).send({ message: err.message }));*/
 };
 
 exports.delete = (req, res, next) => {
-	Publication.destroy({	where: { id: req.params.id }})
-		.then(() => res.status(200).json({ message: 'Objet supprimé !' }))
-		.catch(err => res.status(400).send({ message: err.message }));
+	Publication.findOne({ where: { id: req.params.id }})
+		.then(publication => {
+			if (publication.userId == userId(req)) {
+				if (req.file != undefined) {
+				const filename = publication.attachement.split('/images/')[1];
+				fs.unlinkSync(`images/${filename}`)
+				}
+				Publication.destroy({	where: { id: req.params.id }})
+					.then(() => res.status(200).json({ message: 'Publication supprimé !' }))
+					.catch(err => res.status(400).send({ message: err.message }));
+			}
+			else {
+				return res.status(400).json({ message: "Opération interdite !" });
+			}
+		})
+		.catch(error => res.status(400).json({ error }));
 };
 
 exports.findOne = (req, res, next) => {
-  Publication.findByPk(req.params.id, {include: [{ model: Comment, required: false, where: { publicationId: req.params.id }}]})
+  Publication.findByPk(req.params.id, {
+		include: [{ model: Comment, attributes: ['message', 'attachement', 'like'], required: false,
+			include: [{ model: User,	attributes: ['pseudo'] }]
+		}]
+	})
 		.then(publication => res.status(200).json(publication))
 		.catch(err => res.status(500).send({ message: err.message }));
 };
 
 exports.findAll = (req, res, next) => {
-	Publication.findAll()
+	Publication.findAll({
+		attributes: {
+			exclude: ['updatedAt'],
+			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "Total message"]]
+		},
+		include: [{	model: Comment, attributes: []}//, { model: User, attributes: ['pseudo'] }
+		],
+    group: ['Publications.id'],
+
+/*		attributes: {
+			exclude: ['updatedAt'],
+			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "Total message"]]
+		},
+		include: [{ model: Comment, attributes: ['message', 'attachement', 'like', 'userId', 'publicationId'], required: false, limit: 1,
+			include: [{ model: User,	attributes: ['pseudo'] }],
+		}],
+		group: ['Publications.id'],*/
+		
+		logging: console.log
+	})
 		.then(publications => res.status(200).json(publications))
 		.catch(err =>	res.status(400).send({ message: err.message }));
 };
