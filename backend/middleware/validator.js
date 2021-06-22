@@ -31,13 +31,16 @@ exports.createPublication = [
 			if (req.file != undefined) {
 				const errors = validationResult(req);
 				if (!errors.isEmpty()) {
+					fs.unlinkSync(`images/${req.file.filename}`)
 					return res.status(400).json({ message: "Merci de renseigner tous les champs !" })
 				}
 				else if (req.file.filename == "error") {
 					fs.unlinkSync(`images/error`);
 					return res.status(400).json({ message: "Extensions image jpg, jpeg ou bmp seulement autorisées !" })
 				}
-				next();
+				else {
+					next();
+				}
 			}
 			else {
 				return res.status(400).json({ message: "Merci d'ajouter une image !" })
@@ -51,6 +54,7 @@ exports.modifyPublication = [
 		(req, res, next) => {
 			const errors = validationResult(req);
 			if (!errors.isEmpty()) {
+				fs.unlinkSync(`images/${req.file.filename}`)
 				return res.status(400).json({ message: "Merci de renseigner tous les champs !" })
 			}
 			else {
@@ -61,7 +65,55 @@ exports.modifyPublication = [
 					fs.unlinkSync(`images/error`);
 					return res.status(400).json({ message: "Extensions image jpg, jpeg ou bmp seulement autorisées !" })
 				}
-				next();
+				else {
+					next();
+				}
+			}
+		}
+];
+
+exports.createComment = [
+	check('message').not().isEmpty().trim().blacklist(['$','<>','{}','/']).escape().unescape("&#x27;"),
+		(req, res, next) => {
+			if (req.file != undefined) {
+				const errors = validationResult(req);
+				if (!errors.isEmpty()) {
+					fs.unlinkSync(`images/${req.file.filename}`)
+					return res.status(400).json({ message: "Merci de renseigner un message !" })
+				}
+				else if (req.file.filename == "error") {
+					fs.unlinkSync(`images/error`);
+					return res.status(400).json({ message: "Extensions image jpg, jpeg ou bmp seulement autorisées !" })
+				}
+				else {
+					next();
+				}
+			}
+			else {
+				return res.status(400).json({ message: "Merci d'ajouter une image !" })
+			}
+		}
+];
+
+exports.modifyComment = [
+	check('message').not().isEmpty().trim().blacklist(['$','<>','{}','/']).escape().unescape("&#x27;"),
+		(req, res, next) => {
+			const errors = validationResult(req);
+			if (!errors.isEmpty()) {
+				fs.unlinkSync(`images/${req.file.filename}`)
+				return res.status(400).json({ message: "Merci de renseigner un message !" })
+			}
+			else {
+				if (req.file == undefined) {
+					next();
+				}
+				else if (req.file.filename == "error") {
+					fs.unlinkSync(`images/error`);
+					return res.status(400).json({ message: "Extensions image jpg, jpeg ou bmp seulement autorisées !" })
+				}
+				else {
+					next();
+				}
 			}
 		}
 ];
