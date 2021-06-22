@@ -3,11 +3,12 @@ const userId = require("../utils/userId.js")
 const Comment = db.comment;
 const fs = require('fs');
 
+const Sequelize = require("sequelize");
+
 exports.create = (req, res, next) => {
   Comment.create({
-    pseudo: req.body.pseudo,
 		message: req.body.message,
-    attachement: req.body.attachement, //`${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+    attachement: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
 		like: 0,
 		publicationId: req.body.publicationId,
 		userId: userId(req)
@@ -17,32 +18,52 @@ exports.create = (req, res, next) => {
 };
 
 exports.modify = (req, res, next) => {
-	/*const commentObject = req.file ? // Contrôle si req.file existe
+	const commentObject = req.file ? // Contrôle si req.file existe
 	{ 
 		...req.body,
-		imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-	} : { ...req.body };*/
-	Comment.update(req.body, { where: { id: req.params.id }})
-		.then(() => res.status(200).json({ message: 'Commentaire modifié !' }))
-		.catch(err => res.status(400).send({ message: err.message }));
+		attachement: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+	} : { ...req.body }
+	Comment.findOne({ where: { id: req.params.id }})
+	.then(comment => {
+		if (comment.userId == userId(req)) {
+			if (req.file != undefined) {
+				const filename = comment.attachement.split('/images/')[1];
+				fs.unlinkSync(`images/${filename}`)
+			}
+			Comment.update( commentObject, { where: { id: req.params.id }})
+				.then(() => res.status(200).json({ message: 'Commentaire modifiée !' }))
+				.catch(err => res.status(400).json({ message: err.message }));		
+		}
+		else {
+			return res.status(400).json({ message: "Opération interdite !" });
+		}
+	})
+	.catch(error => res.status(400).json({ error }));
 };
 
 exports.delete = (req, res, next) => {
-	Comment.destroy({	where: { id: req.params.id }})
-		.then(() => res.status(200).json({ message: 'Commentaire supprimé !' }))
-		.catch(err => res.status(400).send({ message: err.message }));
+	Comment.findOne({ where: { id: req.params.id }})
+		.then(comment => {
+			if (comment.userId == userId(req)) {
+				if (req.file != undefined) {
+				const filename = publication.attachement.split('/images/')[1];
+				fs.unlinkSync(`images/${filename}`)
+				}
+				Comment.destroy({	where: { id: req.params.id }})
+					.then(() => res.status(200).json({ message: 'Commentaire supprimé !' }))
+					.catch(err => res.status(400).send({ message: err.message }));
+			}
+			else {
+				return res.status(400).json({ message: "Opération interdite !" });
+			}
+		})
+		.catch(error => res.status(400).json({ error }));
 };
 
 exports.findOne = (req, res, next) => {
-  Comment.findByPk(req.params.id)
+  Comment.findByPk(req.params.id, {	attributes: { exclude: ['updatedAt'] } })
 		.then(comment => res.status(200).json(comment))
 		.catch(err => res.status(500).send({ message: err.message }));
-};
-
-exports.findAll = (req, res, next) => {
-	Comment.findAll()
-		.then(comments => res.status(200).json(comments))
-		.catch(err =>	res.status(400).send({ message: err.message }));
 };
 
 exports.like = (req, res, next) => {
