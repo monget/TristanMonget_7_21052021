@@ -2,9 +2,24 @@ const db = require("../models");
 const Publication = db.publication;
 const Comment = db.comment;
 const User = db.user;
+const fs = require('fs');
 
 exports.publication = (req, res, next) => {
-  Publication.findByPk(req.params.id)
+  if (req.baseUrl == "/api/comments" ) {
+    Publication.findByPk(req.body.publicationId)
+      .then(publication => {
+        if (publication == null) {
+          if (req.baseUrl == "/api/comments") {
+            fs.unlinkSync(`images/comments/${req.file.filename}`)
+          }
+          res.status(404).send({ message: "Cette publication n'existe pas !" });
+          return res.end();
+        }
+        next()
+      })
+  }
+  else {
+    Publication.findByPk(req.params.id)
     .then(publication => {
       if (publication == null) {
         res.status(404).send({ message: "Cette publication n'existe pas !" });
@@ -12,6 +27,7 @@ exports.publication = (req, res, next) => {
       }
       next()
     })
+  }
 };
 
 exports.comment = (req, res, next) => {
