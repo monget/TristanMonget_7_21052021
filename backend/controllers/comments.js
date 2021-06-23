@@ -3,12 +3,10 @@ const userId = require("../utils/userId.js")
 const Comment = db.comment;
 const fs = require('fs');
 
-const Sequelize = require("sequelize");
-
 exports.create = (req, res, next) => {
   Comment.create({
 		message: req.body.message,
-    attachement: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+    attachement: `${req.protocol}://${req.get('host')}/images/comments/${req.file.filename}`,
 		like: 0,
 		publicationId: req.body.publicationId,
 		userId: userId(req)
@@ -21,14 +19,14 @@ exports.modify = (req, res, next) => {
 	const commentObject = req.file ? // Contrôle si req.file existe
 	{ 
 		...req.body,
-		attachement: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+		attachement: `${req.protocol}://${req.get('host')}/images/comments/${req.file.filename}`
 	} : { ...req.body }
 	Comment.findOne({ where: { id: req.params.id }})
 	.then(comment => {
 		if (comment.userId == userId(req)) {
 			if (req.file != undefined) {
-				const filename = comment.attachement.split('/images/')[1];
-				fs.unlinkSync(`images/${filename}`)
+				const filename = comment.attachement.split('/images/comments/')[1];
+				fs.unlinkSync(`images/comments/${filename}`)
 			}
 			Comment.update( commentObject, { where: { id: req.params.id }})
 				.then(() => res.status(200).json({ message: 'Commentaire modifiée !' }))
@@ -45,9 +43,9 @@ exports.delete = (req, res, next) => {
 	Comment.findOne({ where: { id: req.params.id }})
 		.then(comment => {
 			if (comment.userId == userId(req)) {
-				if (req.file != undefined) {
-				const filename = publication.attachement.split('/images/')[1];
-				fs.unlinkSync(`images/${filename}`)
+				const filename = comment.attachement.split('/images/comments/')[1];
+				if (filename != undefined) {
+					fs.unlinkSync(`images/comments/${filename}`)
 				}
 				Comment.destroy({	where: { id: req.params.id }})
 					.then(() => res.status(200).json({ message: 'Commentaire supprimé !' }))
