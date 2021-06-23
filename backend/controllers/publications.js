@@ -1,17 +1,16 @@
 const db = require("../models");
+const Sequelize = require("sequelize");
 const userId = require("../utils/userId.js");
 const Publication = db.publication;
 const Comment = db.comment;
 const User = db.user;
 const fs = require('fs');
 
-const Sequelize = require("sequelize");
-
 exports.create = (req, res, next) => {
   Publication.create({
     title: req.body.title,
 		message: req.body.message,
-    attachement: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+    attachement: `${req.protocol}://${req.get('host')}/images/publications/${req.file.filename}`,
 		like: 0,
 		userId: userId(req)
   })
@@ -23,14 +22,14 @@ exports.modify = (req, res, next) => {
 	const publicationObject = req.file ? // Contrôle si req.file existe
 	{ 
 		...req.body,
-		attachement: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+		attachement: `${req.protocol}://${req.get('host')}/images/publications/${req.file.filename}`
 	} : { ...req.body }
 	Publication.findOne({ where: { id: req.params.id }})
 		.then(publication => {
 			if (publication.userId == userId(req)) {
 				if (req.file != undefined) {
-					const filename = publication.attachement.split('/images/')[1];
-					fs.unlinkSync(`images/${filename}`)
+					const filename = publication.attachement.split('/images/publications/')[1];
+					fs.unlinkSync(`images/publications/${filename}`)
 				}
 				Publication.update( publicationObject, { where: { id: req.params.id }})
 					.then(() => res.status(200).json({ message: 'Publication modifiée !' }))
@@ -47,9 +46,9 @@ exports.delete = (req, res, next) => {
 	Publication.findOne({ where: { id: req.params.id }})
 		.then(publication => {
 			if (publication.userId == userId(req)) {
-				if (req.file != undefined) {
-				const filename = publication.attachement.split('/images/')[1];
-				fs.unlinkSync(`images/${filename}`)
+				const filename = publication.attachement.split('/images/publications/')[1];
+				if (filename != undefined) {
+					fs.unlinkSync(`images/publications/${filename}`)
 				}
 				Publication.destroy({	where: { id: req.params.id }})
 					.then(() => res.status(200).json({ message: 'Publication supprimé !' }))
@@ -78,7 +77,7 @@ exports.findAll = (req, res, next) => {
 			exclude: ['updatedAt'],
 			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "Total message"]]
 		},
-		include: [{	model: Comment, attributes: []}//, { model: User, attributes: ['pseudo'] }
+		include: [{	model: Comment, attributes: [] }//, { model: User, attributes: ['pseudo'] }
 		],
     group: ['Publications.id'],
 
@@ -90,8 +89,8 @@ exports.findAll = (req, res, next) => {
 			include: [{ model: User,	attributes: ['pseudo'] }],
 		}],
 		group: ['Publications.id'],*/
-		
 		logging: console.log
+			
 	})
 		.then(publications => res.status(200).json(publications))
 		.catch(err =>	res.status(400).send({ message: err.message }));
