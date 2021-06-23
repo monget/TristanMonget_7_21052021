@@ -7,8 +7,13 @@ const MIME_TYPES = {
 };
 
 const storage = multer.diskStorage({
-  destination: (req, file, callback) => { // Destination du fichier
-    callback(null, 'images');
+  destination: (req, file, callback) => {
+    if (req.baseUrl == "/api/comments") {
+      callback(null, 'images/comments');
+    }
+    else {
+      callback(null, 'images/publications');
+    }
   },
   filename: (req, file, callback) => { // Nom du fichier et contrôle de l'extension
     const originalName = file.originalname.split(' ').join('_');
