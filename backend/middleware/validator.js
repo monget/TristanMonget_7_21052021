@@ -11,7 +11,9 @@ exports.signup = [
 			if (!errors.isEmpty()) {
 				return res.status(400).json({ message: "Merci de renseigner une adresse email valide !" })
 			}
-			next();
+			else {
+				next();
+			}
 		},
 	check('password')
 	.matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-zÀ-ÖØ-öø-ÿ\d@$!%*?&\s_-]{8,}$/),
@@ -20,7 +22,9 @@ exports.signup = [
 			if (!errors.isEmpty()) {
 				return res.status(400).json({ message: "Le mot de passe doit contenir au minimun 8 caractères dont un chiffre, une lettre majuscule et une minuscule." })
 			}
-			next();
+			else {
+				next();
+			}
 		}
 ];
 
