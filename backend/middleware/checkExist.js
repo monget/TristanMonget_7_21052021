@@ -1,4 +1,5 @@
 const db = require("../models");
+const userId = require("../utils/userId.js");
 const Publication = db.publication;
 const Comment = db.comment;
 const User = db.user;
@@ -44,20 +45,54 @@ exports.comment = (req, res, next) => {
 exports.user = (req, res, next) => {
   User.findOne({ where: { pseudo: req.body.pseudo }})
     .then(user => {
-      if (user) {
-        res.status(400).send({ message: "Nom d'utilisateur déjà utilisé" });
-        return res.end();
-      }
-      User.findOne({
-        where: {
-          email: req.body.email
-        }
-      }).then(user => {
+      if (req.method == "PUT") {
         if (user) {
-          res.status(400).send({ message: "Email déjà utilisé." });
-          return res.end();
+          if (user.id == userId(req)) {
+            User.findOne({ where: { email: req.body.email }})
+              .then(user => {
+                if ((user == null) || (user.id == userId(req))) {
+                  next();
+                }
+                else if (user) {
+                  return res.status(400).json({ message: "Email déjà utilisé." });
+                }
+                else {
+                  next();
+                }
+              });
+          }
+          else {
+            return res.status(400).json({ message: "Nom d'utilisateur déjà utilisé" });
+          }
         }
-        next();
-      });
+        else {
+          User.findOne({ where: { email: req.body.email }})
+            .then(user => {
+              if ((user == null) || (user.id == userId(req))) {
+                next();
+              }
+              else if (user) {
+                return res.status(400).json({ message: "Email déjà utilisé." });
+              }
+              else {
+                next();
+              }
+            });
+        }
+      }
+      else if (user) {
+        return res.status(400).json({ message: "Nom d'utilisateur déjà utilisé" });
+      }
+      else {
+        User.findOne({ where: { email: req.body.email }})
+        .then(user => {
+          if (user) {
+            return res.status(400).json({ message: "Email déjà utilisé." });
+          }
+          else {
+            next();
+          }
+        });
+      }
     });
 };
