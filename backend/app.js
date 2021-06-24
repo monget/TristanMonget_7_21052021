@@ -6,7 +6,6 @@ const cookieparser = require ('cookie-parser')
 const Keygrip = require('keygrip');
 require('dotenv').config()
 
-
 const usersRoutes = require('./routes/users');
 const publicationsRoutes = require('./routes/publications');
 const commentsRoutes = require('./routes/comments');

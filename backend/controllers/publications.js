@@ -5,6 +5,7 @@ const Publication = db.publication;
 const Comment = db.comment;
 const User = db.user;
 const fs = require('fs');
+const publication = require("../models/publication");
 
 exports.create = (req, res, next) => {
   Publication.create({
@@ -20,7 +21,7 @@ exports.create = (req, res, next) => {
 
 exports.modify = (req, res, next) => {
 	const publicationObject = req.file ? // Contrôle si req.file existe
-	{ 
+	{
 		...req.body,
 		attachement: `${req.protocol}://${req.get('host')}/images/publications/${req.file.filename}`
 	} : { ...req.body }
@@ -71,30 +72,101 @@ exports.findOne = (req, res, next) => {
 		.catch(err => res.status(500).send({ message: err.message }));
 };
 
+/*
+exports.findAll = (req, res, next) => {
+	Publication.findAll({
+	//	attributes: {
+	//		exclude: ['updatedAt'],
+	//		include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "Total message"]]
+	//	},
+	//	include: [{	model: Comment, attributes: [] }//, { model: User, attributes: ['pseudo'] }
+	//	],
+  //  group: ['Publications.id'],
+
+		//attributes: {
+		//	exclude: ['updatedAt'],
+		//	include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "Total message"]]
+		//},
+		include: [{ model: Comment, attributes: ['message', 'attachement', 'like', 'userId', 'publicationId'], required: false, limit: 10,
+			include: [{ model: User,	attributes: ['pseudo'] }],
+		}],
+		group: ['Publications.id'],
+		logging: console.log
+
+	})
+		.then(publications => res.status(200).json(publications))
+		.catch(err =>	res.status(400).send({ message: err.message }));
+};*/
+
 exports.findAll = (req, res, next) => {
 	Publication.findAll({
 		attributes: {
 			exclude: ['updatedAt'],
-			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "Total message"]]
+			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "TotalComments"]]
 		},
 		include: [{	model: Comment, attributes: [] }//, { model: User, attributes: ['pseudo'] }
 		],
     group: ['Publications.id'],
 
-/*		attributes: {
+	/*	attributes: {
 			exclude: ['updatedAt'],
 			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "Total message"]]
 		},
-		include: [{ model: Comment, attributes: ['message', 'attachement', 'like', 'userId', 'publicationId'], required: false, limit: 1,
-			include: [{ model: User,	attributes: ['pseudo'] }],
-		}],
-		group: ['Publications.id'],*/
-		logging: console.log
-			
+			include: [{ model: Comment, attributes: { exclude: ['id', 'updatedAt', 'userId'] }, required: false, limit: 10,
+				include: [{ model: User,	attributes: ['pseudo'] }],
+			}]*/
 	})
-		.then(publications => res.status(200).json(publications))
+	//	.then(publications => res.status(200).json(publications))
+
+	/*	.then(publications => {
+			publications.forEach(function (publication) {
+				const number = publication.comments.length;
+				console.log(number)
+				res.status(200).json(publications)
+			})
+		})*/
+		.then(publications => {
+			publications.forEach(function (publication) {
+				Comment.findAll({ include: [{ model: User,	attributes: ['pseudo'] }] }, { where: { publicationId: publication.dataValues.id } })
+					.then(comments => {
+
+					//	console.log(publication.dataValues)
+						/*const completObject =  // Contrôle si req.file existe
+						[ 
+								id = publication.id,
+								title = publication.title,
+								message = publication.message,
+								attachement = publication.attachement,
+								like = publication.like,
+								createdAt = publication.createdAt,
+								userId = publication.userId,
+								totalComments = publication.TotalComments,
+								commentaires= comments
+						] ;*/
+
+						const completObject = comments ? // Contrôle si req.file existe
+						{ 
+								...publication.dataValues,
+								commentaires: comments
+						} : { ...publication.dataValues } ;
+
+					/*	let completObject = publications;
+						const complet = new Complet({
+							...completObject, // Opérateur spread extrait toutes les données de sauceObject pour les transmettre au nouveau schéma
+							comments: comments
+					});*/
+					console.log(completObject)
+					res.status(200).json(completObject)
+					//res.status(200).json(publications)
+					})
+					
+			})
+			//res.status(200).json(publications)
+			})
+			//res.status(200).json(publications)
 		.catch(err =>	res.status(400).send({ message: err.message }));
 };
+
 
 exports.like = (req, res, next) => {
 	counter = req.body.like;
