@@ -5,7 +5,7 @@ const Publication = db.publication;
 const Comment = db.comment;
 const User = db.user;
 const fs = require('fs');
-const publication = require("../models/publication");
+const { createComment } = require("../middleware/validator");
 
 exports.create = (req, res, next) => {
   Publication.create({
@@ -72,101 +72,47 @@ exports.findOne = (req, res, next) => {
 		.catch(err => res.status(500).send({ message: err.message }));
 };
 
-/*
-exports.findAll = (req, res, next) => {
-	Publication.findAll({
-	//	attributes: {
-	//		exclude: ['updatedAt'],
-	//		include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "Total message"]]
-	//	},
-	//	include: [{	model: Comment, attributes: [] }//, { model: User, attributes: ['pseudo'] }
-	//	],
-  //  group: ['Publications.id'],
-
-		//attributes: {
-		//	exclude: ['updatedAt'],
-		//	include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "Total message"]]
-		//},
-		include: [{ model: Comment, attributes: ['message', 'attachement', 'like', 'userId', 'publicationId'], required: false, limit: 10,
-			include: [{ model: User,	attributes: ['pseudo'] }],
-		}],
-		group: ['Publications.id'],
-		logging: console.log
-
-	})
-		.then(publications => res.status(200).json(publications))
-		.catch(err =>	res.status(400).send({ message: err.message }));
-};*/
-
 exports.findAll = (req, res, next) => {
 	Publication.findAll({
 		attributes: {
-			exclude: ['updatedAt'],
+			exclude: ['userId', 'updatedAt'],
 			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "TotalComments"]]
 		},
-		include: [{	model: Comment, attributes: [] }//, { model: User, attributes: ['pseudo'] }
+		include: [{	model: Comment, attributes: [] }, { model: User, attributes: ['pseudo'] }
 		],
     group: ['Publications.id'],
-
-	/*	attributes: {
-			exclude: ['updatedAt'],
-			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "Total message"]]
-		},
-			include: [{ model: Comment, attributes: { exclude: ['id', 'updatedAt', 'userId'] }, required: false, limit: 10,
-				include: [{ model: User,	attributes: ['pseudo'] }],
-			}]*/
 	})
-	//	.then(publications => res.status(200).json(publications))
-
-	/*	.then(publications => {
-			publications.forEach(function (publication) {
-				const number = publication.comments.length;
-				console.log(number)
-				res.status(200).json(publications)
-			})
-		})*/
 		.then(publications => {
-			publications.forEach(function (publication) {
-				Comment.findAll({ include: [{ model: User,	attributes: ['pseudo'] }] }, { where: { publicationId: publication.dataValues.id } })
+			let totalPublications = [];
+			for (let i = 0; i < publications.length; i++) {
+				let user = publications[i].dataValues.user;
+				Comment.findAll({ where: { publicationId: publications[i].dataValues.id } })
 					.then(comments => {
-
-					//	console.log(publication.dataValues)
-						/*const completObject =  // Contrôle si req.file existe
-						[ 
-								id = publication.id,
-								title = publication.title,
-								message = publication.message,
-								attachement = publication.attachement,
-								like = publication.like,
-								createdAt = publication.createdAt,
-								userId = publication.userId,
-								totalComments = publication.TotalComments,
-								commentaires= comments
-						] ;*/
-
-						const completObject = comments ? // Contrôle si req.file existe
-						{ 
-								...publication.dataValues,
-								commentaires: comments
-						} : { ...publication.dataValues } ;
-
-					/*	let completObject = publications;
-						const complet = new Complet({
-							...completObject, // Opérateur spread extrait toutes les données de sauceObject pour les transmettre au nouveau schéma
-							comments: comments
-					});*/
-					console.log(completObject)
-					res.status(200).json(completObject)
-					//res.status(200).json(publications)
+						let totalComments = [];
+						for (let i = 0; i < comments.length; i++) {
+							let completObjectComments = {
+								id: comments[i].dataValues.id,
+								message: comments[i].dataValues.message,
+								attachement: comments[i].dataValues.attachement,
+								like: 0,
+								createdAt: comments[i].dataValues.createdAt,
+								userId: comments[i].dataValues.userId
+							}
+							totalComments.push(completObjectComments);
+						}
+						addComments(totalComments, user)
+						if (totalPublications.length === publications.length) {
+							res.status(200).json(totalPublications)
+						}
 					})
-					
-			})
-			//res.status(200).json(publications)
-			})
-			//res.status(200).json(publications)
+					function addComments(comments, user) {
+						let completObject =  { ...publications[i].dataValues, user: user.dataValues.pseudo, comments: comments }
+						totalPublications.push(completObject)
+					}
+			}
+		})
 		.catch(err =>	res.status(400).send({ message: err.message }));
 };
-
 
 exports.like = (req, res, next) => {
 	counter = req.body.like;
