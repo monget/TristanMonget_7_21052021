@@ -5,7 +5,8 @@ const Publication = db.publication;
 const Comment = db.comment;
 const User = db.user;
 const fs = require('fs');
-const { createComment } = require("../middleware/validator");
+const publication = require("../models/publication");
+const { createPublication } = require("../middleware/validator");
 
 exports.create = (req, res, next) => {
   Publication.create({
@@ -72,10 +73,47 @@ exports.findOne = (req, res, next) => {
 		.catch(err => res.status(500).send({ message: err.message }));
 };
 
+/*
+exports.findAll = (req, res, next) => {
+	Publication.findAll({
+		include: [{ model: Comment, attributes: {exclude: ['updatedAt', 'publicationId']} , required: false, limit: 99,
+			include: [{ model: User,	attributes: ['pseudo'] }],
+		}],
+		group: ['Publications.id']
+	})
+		.then(publications => {
+			let publicationsComplete = [];
+			publications.forEach(publication => {
+				User.findByPk(publication.dataValues.userId)
+					.then(user =>	{
+						let publicationWithTotalComments = {
+							id: publication.dataValues.id,
+							title: publication.dataValues.title,
+							message: publication.dataValues.message,
+							attachement: publication.dataValues.attachement,
+							like: publication.dataValues.like,
+							createdAt: publication.dataValues.createdAt,
+							updatedAt: publication.dataValues.updatedAt,
+							userId: publication.dataValues.userId,
+							publishedBy: user.dataValues.pseudo,
+							totalComments: publication.dataValues.comments.length,
+							comments: publication.dataValues.comments
+						}
+						publicationsComplete.push(publicationWithTotalComments)
+						if (publications.length === publicationsComplete.length) {
+							res.status(200).json(publicationsComplete)
+						}
+					})			
+			})
+		})
+		.catch(err =>	res.status(400).send({ message: err.message }));
+};*/
+
+
+
 exports.findAll = (req, res, next) => {
 	Publication.findAll({
 		attributes: {
-			exclude: ['userId', 'updatedAt'],
 			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "TotalComments"]]
 		},
 		include: [{	model: Comment, attributes: [] }, { model: User, attributes: ['pseudo'] }
@@ -83,36 +121,52 @@ exports.findAll = (req, res, next) => {
     group: ['Publications.id'],
 	})
 		.then(publications => {
-			let totalPublications = [];
-			for (let i = 0; i < publications.length; i++) {
-				let user = publications[i].dataValues.user;
-				Comment.findAll({ where: { publicationId: publications[i].dataValues.id } })
+			let arrayPublications = [];
+			publications.forEach(publication => {
+				let creatorPublication = publication.dataValues.user;
+				Comment.findAll({ where: { publicationId: publication.dataValues.id } })
 					.then(comments => {
-						let totalComments = [];
-						for (let i = 0; i < comments.length; i++) {
-							let completObjectComments = {
-								id: comments[i].dataValues.id,
-								message: comments[i].dataValues.message,
-								attachement: comments[i].dataValues.attachement,
-								like: 0,
-								createdAt: comments[i].dataValues.createdAt,
-								userId: comments[i].dataValues.userId
-							}
-							totalComments.push(completObjectComments);
-						}
-						addComments(totalComments, user)
-						if (totalPublications.length === publications.length) {
-							res.status(200).json(totalPublications)
-						}
+						let arrayComments = [];
+						comments.forEach(comment => {
+							User.findByPk(comment.dataValues.userId)
+								.then(user => {
+									let objectComments = {
+										id: comment.dataValues.id,
+										message: comment.dataValues.message,
+										attachement: comment.dataValues.attachement,
+										like: comment.dataValues.like,
+										createdAt: comment.dataValues.createdAt,
+										userId: comment.dataValues.userId,
+										commentedBy: user.dataValues.pseudo
+									}
+									arrayComments.push(objectComments);
+									if (comments.length === arrayComments.length) {										
+										let objectPublication = {
+											id: publication.dataValues.id,
+											title: publication.dataValues.title,
+											message: publication.dataValues.message,
+											attachement: publication.dataValues.attachement,
+											like: publication.dataValues.like,
+											createdAt: publication.dataValues.createdAt,
+											updatedAt: publication.dataValues.updatedAt,
+											userId: publication.dataValues.userId,
+											publishedBy: creatorPublication.dataValues.pseudo,
+											totalComments: publication.dataValues.TotalComments,
+											comments: arrayComments
+										}
+										arrayPublications.push(objectPublication)
+										if (publications.length === arrayPublications.length) {
+											res.status(200).json(arrayPublications)
+										}
+									}
+								})	
+						})	
 					})
-					function addComments(comments, user) {
-						let completObject =  { ...publications[i].dataValues, user: user.dataValues.pseudo, comments: comments }
-						totalPublications.push(completObject)
-					}
-			}
+			})
 		})
 		.catch(err =>	res.status(400).send({ message: err.message }));
 };
+
 
 exports.like = (req, res, next) => {
 	counter = req.body.like;
