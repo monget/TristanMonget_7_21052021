@@ -1,6 +1,7 @@
 const db = require("../models");
 const userId = require("../utils/userId.js")
 const Comment = db.comment;
+const Like = db.like;
 const fs = require('fs');
 
 exports.create = (req, res, next) => {
@@ -8,6 +9,7 @@ exports.create = (req, res, next) => {
 		message: req.body.message,
     attachement: `${req.protocol}://${req.get('host')}/images/comments/${req.file.filename}`,
 		like: 0,
+		dislike: 0,
 		publicationId: req.body.publicationId,
 		userId: userId(req)
   })
@@ -63,7 +65,7 @@ exports.findOne = (req, res, next) => {
 		.then(comment => res.status(200).json(comment))
 		.catch(err => res.status(500).send({ message: err.message }));
 };
-
+/*
 exports.like = (req, res, next) => {
 	counter = req.body.like;
 	Comment.findByPk(req.params.id)
@@ -77,6 +79,98 @@ exports.like = (req, res, next) => {
 				comment.increment({ like: -1 }, {	where: { id: req.params.id }})
 					.then(() => res.status(200).json({ message: 'J\'aime annulé' }))
 					.catch(err => res.status(400).send({ message: err.message }));
+			}
+		})
+		.catch(err => res.status(404).send({ message: err.message }));
+};*/
+
+exports.like = (req, res, next) => {
+	counter = req.body.like;
+	Comment.findByPk(req.params.id, {	include: [{ model: Like, attributes: ['usersLiked', 'usersDisliked', 'userId', 'commentId'], required: false }] })
+		.then(comment => {
+			if (!comment.likes.length) {
+				if (counter === 1) {
+					comment.increment({ like: 1 }, { where: { id: req.params.id }})
+						.then(() => {
+							Like.create({
+								usersLiked: true,
+								userId: userId(req),
+								commentId: req.params.id
+							})
+							res.status(200).json({ message: 'J\'aime !' })
+						})
+						.catch(err => res.status(400).send({ message: err.message }));
+				}
+				else if (counter === -1) {
+					console.log("first dislike")
+					comment.increment({ dislike: -1 }, {	where: { id: req.params.id }})
+					.then(() => {
+						Like.create({
+							usersDisliked: true,
+							userId: userId(req),
+							commentId: req.params.id
+						})
+						res.status(200).json({ message: 'Je n\'aime pas !' })
+					})
+					.catch(err => res.status(400).send({ message: err.message }));
+				}
+			}
+			else {
+				comment.likes.forEach(like => {
+					if (counter === 1) {
+						if (like.dataValues.userId != userId(req)) {
+							comment.increment({ like: 1 }, { where: { id: req.params.id }})
+								.then(() => {
+									Like.create({
+										usersLiked: true,
+										userId: userId(req),
+										commentId: req.params.id
+									})
+									res.status(200).json({ message: 'J\'aime !' })
+								})
+								.catch(err => res.status(400).send({ message: err.message }));
+						}
+						else {
+							res.status(400).json({ message: 'Vous aimez déjà ce commentaire !' })
+						}
+					}
+					else if (counter === 0) {
+						if ((like.dataValues.usersLiked === true) && (like.dataValues.userId === userId(req))) {
+							Like.destroy({ where: { userId: userId(req), commentId: req.params.id }})
+								.then(() => {
+									comment.increment({ like: -1 }, { where: { id: req.params.id }})
+										.then(() => res.status(200).json({ message: 'J\'aime annulé'}))
+										.catch(error => res.status(400).json({ error }));
+								})
+						}
+						else {
+							Like.destroy({ where: { userId: userId(req), commentId: req.params.id }})
+								.then(() => {
+									comment.increment({ dislike: 1 }, { where: { id: req.params.id }})
+										.then(() => res.status(200).json({ message: 'Je n\'aime pas annulé'}))
+										.catch(error => res.status(400).json({ error }));
+								})
+						}
+					}
+					else if (counter === -1) {
+						console.log("déjà dislike")
+						if (like.dataValues.userId != userId(req)) {
+							comment.increment({ dislike: -1 }, {	where: { id: req.params.id }})
+								.then(() => {
+									Like.create({
+										usersDisliked: true,
+										userId: userId(req),
+										commentId: req.params.id
+									})
+									res.status(200).json({ message: 'Je n\'aime pas !' })
+								})
+								.catch(err => res.status(400).send({ message: err.message }));
+						}
+						else {
+							res.status(400).json({ message: 'Vous n\aimez pas déjà ce commentaire !' })
+						}
+					}
+				});
 			}
 		})
 		.catch(err => res.status(404).send({ message: err.message }));
