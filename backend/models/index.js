@@ -27,6 +27,7 @@ db.sequelize = sequelize;
 db.user = require("../models/user.js")(sequelize, Sequelize);
 db.publication = require("../models/publication.js")(sequelize, Sequelize);
 db.comment = require("../models/comment.js")(sequelize, Sequelize);
+db.like = require("../models/like.js")(sequelize, Sequelize);
 
 db.user.hasMany(db.publication, {
   foreignKey: {
@@ -54,5 +55,28 @@ db.user.hasMany(db.comment, {
   onUpdate: 'CASCADE'
 });
 db.comment.belongsTo(db.user);
+
+db.user.hasMany(db.like, {
+  foreignKey: {
+    allowNull: false
+  },
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+db.like.belongsTo(db.user)
+
+db.comment.hasMany(db.like, {
+
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+db.like.belongsTo(db.comment)
+
+db.publication.hasMany(db.like, {
+
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+db.like.belongsTo(db.publication)
 
 module.exports = db;
