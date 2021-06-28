@@ -11,6 +11,9 @@ module.exports = (sequelize, Sequelize) => {
       },
       like: {
         type: Sequelize.INTEGER
+      },
+      dislike: {
+        type: Sequelize.INTEGER
       }
     });
   
