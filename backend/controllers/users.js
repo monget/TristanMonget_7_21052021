@@ -61,3 +61,17 @@ exports.editProfil = (req, res, next) => {
       }
     })
 };
+
+exports.deleteProfil = (req, res, next) => {
+  User.findByPk(req.params.id)
+    .then(user => {
+      if (user.id == userId(req)) {
+        User.destroy({ where: { id: req.params.id }})
+          .then(() => res.status(200).json({ message: 'Profil supprimé !'}))
+          .catch(err => res.status(500).send({ message: err.message }));
+      }
+      else {
+        return res.status(400).json({ message: "Opération interdite !"})
+      }
+    })
+};
