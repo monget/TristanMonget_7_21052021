@@ -5,20 +5,15 @@
         <h1>Inscription</h1>
         <p>
           <label class="label" for="pseudo">Pseudo :</label>
-          <Field id="pseudo" class="input" type="text" name="pseudo" minlength="3" maxlength="12" placeholder="De 3 à 12 caractères"/>
-          <ErrorMessage name="pseudo"/><br />
+          <input id="pseudo" class="input" type="text" name="pseudo" minlength="3" maxlength="12" placeholder="De 3 à 12 caractères"/>
           <label class="label" for="password">Mot de passe :</label>
-          <Field class="input" type="password" id="password" name="password" minlength="6" placeholder="Au moins 6 caractères"/>
-          <ErrorMessage name="password"/><br />
+          <input class="input" type="password" id="password" name="password" minlength="8" placeholder="Au moins 8 caractères"/>
           <label class="label" for="confirm_password">Confirmez le mot de passe :</label>
-          <Field class="input" type="password" id="confirm_password" name="confirm_password" minlength="6"/>
-          <ErrorMessage name="confirm_password"/><br />
+          <input class="input" type="password" id="confirm_password" name="confirm_password" minlength="6"/>
           <label class="label" for="email">Adresse email :</label>
-          <Field class="input" type="email" id="email" name="email"/>
-          <ErrorMessage name="email"/><br />
+          <input class="input" type="email" id="email" name="email"/>
           <button class="submitForm">Valider</button>
-          <span>Déjà un compte ?</span><br />
-          <router-link to="/connection">Connectez-vous</router-link>
+          <span>Déjà un compte ? <router-link to="/connection">Connectez-vous</router-link></span><br />
         </p>
       </Form>
     </div>
@@ -27,7 +22,7 @@
 
 <script>
 import UserDataService from "../services/UserDataService";
-import { Form, Field, ErrorMessage } from 'vee-validate';
+import { Form } from 'vee-validate';
 import * as Yup from "yup";
 import router from "../router";
 
@@ -35,8 +30,6 @@ export default {
   name: "Registration",
   components: {
     Form,
-    Field,
-    ErrorMessage,
   },
   setup() {
     function onSubmit(values) {
@@ -58,9 +51,8 @@ export default {
     const schema = Yup.object().shape({
       pseudo: Yup.string().min(3, "Minimun 3 caractères").max(12, "Maximun 12 caractères").required("Merci de renseigner un pseudo"),
       email: Yup.string().email("Merci de renseigner un email valide").required("Merci de renseigner un email"),
-      password: Yup.string().min(6, "Minimun 6 caractères").required("Merci de renseigner un mot de passe"),
-      confirm_password: Yup.string().required("Merci de confirmer votre mot de passe")
-        .oneOf([Yup.ref("password")], "Votre mot de passe ne correspond pas"),
+      password: Yup.string().min(8, "Le mot de passe doit contenir au minimun 8 caractères").matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-zÀ-ÖØ-öø-ÿ\d@$!%*?&\s_-]{8,}$/, "Minimun un chiffre, une lettre majuscule et une minuscule").required("Merci de renseigner un mot de passe"),
+      confirm_password: Yup.string().required("Merci de confirmer votre mot de passe").oneOf([Yup.ref("password")], "Votre mot de passe ne correspond pas"),
     });
     return {
       onSubmit,
@@ -71,51 +63,64 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@font-face {
+  font-family: "Roboto-Medium";
+  src: local("Roboto-Medium"),
+  url(../fonts/Roboto-Medium.ttf) format("truetype");
+}
 h1 {
   margin: 0px;
-  padding-bottom: 5%;
-  color: white;
+  font-family: "Roboto-Medium";
+  font-weight: 500;
+  font-size: 45px;
+  text-align: center;
+  padding: 15px 0;
 }
-.registrationForm
-{
-  padding: 2%;
-  margin: 50px auto;
-  width: 40%;
-  background-color: grey;
+.registration-connection_form {
+  padding-top: 50px;
+  padding-bottom: 50px;
+  padding-left: 90px;
+}
+.registrationForm {
+  font-size: 20px;
+  padding: 0 2% 2%;
+  width: 47%;
+  background-color: white;
   border-radius: 30px;
 }
-
 @media (max-width: 425px) {
   .registrationForm {
     padding: 5%;
     width: 65%;
   }
 }
-
-.registrationForm p
-{
+.registrationForm p {
   margin: auto;
-  padding: 5%;
-  background-color: rgba(255, 255, 255, 0.904);
+  padding: 4%;
+  background-color: rgba(236, 235, 235, 1);
+  box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.50);
   text-align: center;
 }
-.label
-{
+.label {
   display: block;
   margin-top: 10px;
   text-align: left;
-  padding-left: 1%;
   color: black;
 }
-.input
-{
-  width: 96%;
+.input {
+  font-size: 17px;
+  width: 100%;
+  display: block;
+  padding: 5px;
+  box-sizing: border-box;
 }
-.submitForm
-{
-  width: 99%;
-  margin: 13px 0px;
+.submitForm {
+  font-size: 20px;
+  display: block;
+  width: 100%;
+  margin: 4% 0px;
   font-weight: bold;
+  color: white;
   background-color: rgb(27, 125, 223);
 }
 a {

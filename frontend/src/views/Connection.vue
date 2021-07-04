@@ -2,18 +2,16 @@
   <main>
     <div class="registration-connection_form">
       <Form class="connectionForm" @submit="onSubmit" :validation-schema="schema">
-        <h1>Connexion</h1>
-        <p>
-          <label class="label" for="pseudo">Pseudo :</label>
-          <Field class="input" type="text" id="pseudo" name="pseudo" v-model="user.pseudo"/>
-          <ErrorMessage name="pseudo"/><br /><br />
-          <label class="label" for="password">Mot de passe :</label>
-          <Field class="input" type="password" id="password" name="password"/>
-          <ErrorMessage name="password"/><br />
-          <button class="submitForm">Connexion</button>
-          <span>Pas encore de compte ?</span><br />
-          <router-link to="/registration">Inscrivez-vous</router-link>
-        </p>
+        <h1>Connection</h1>
+          <p>
+            <label class="label" for="pseudo">Pseudo :</label>
+            <input class="input" type="text" id="pseudo" name="pseudo" v-model="user.pseudo"/><br />
+            <label class="label" for="password">Mot de passe :</label>
+            <input class="input" type="password" id="password" name="password"/>
+            <button class="submitForm">Valider</button>
+            <span>Pas encore de compte ? <router-link to="/registration">Inscrivez-vous</router-link></span>
+            
+          </p>
       </Form>
     </div>
   </main>
@@ -21,7 +19,7 @@
 
 <script>
 import UserDataService from "../services/UserDataService";
-import { Form, Field, ErrorMessage } from 'vee-validate';
+import { Form } from 'vee-validate';
 import * as Yup from "yup";
 import router from "../router";
 
@@ -38,8 +36,8 @@ export default {
   },
   components: {
     Form,
-    Field,
-    ErrorMessage,
+    //Field,
+    //ErrorMessage,
   },
   setup() {
     function onSubmit(values) {
@@ -51,7 +49,7 @@ export default {
         .then(response => {
           if (response.data.token) {
           localStorage.setItem('user', JSON.stringify(response.data));
-          router.push('/');
+          router.push('/about');
         }})
         .catch(e => {
           console.log(e);
@@ -75,51 +73,65 @@ export default {
 
 
 <style lang="scss" scoped>
+@font-face {
+  font-family: "Roboto-Medium";
+  src: local("Roboto-Medium"),
+  url(../fonts/Roboto-Medium.ttf) format("truetype");
+}
 h1 {
   margin: 0px;
-  padding-bottom: 5%;
-  color: white;
+  font-family: "Roboto-Medium";
+  font-weight: 500;
+  font-size: 45px;
+  text-align: center;
+  padding: 15px 0;
 }
-.connectionForm
-{
-  padding: 2%;
-  margin: 50px auto;
-  width: 40%;
-  background-color: grey;
+.registration-connection_form {
+  padding-top: 50px;
+  padding-bottom: 50px;
+  padding-left: 90px;
+}
+.connectionForm {
+  font-size: 20px;
+  padding: 0 2% 2%;
+  width: 47%;
+  background-color: white;
   border-radius: 30px;
 }
-
 @media (max-width: 425px) {
   .connectionForm {
     padding: 5%;
     width: 65%;
   }
 }
-
-.connectionForm p
-{
+.connectionForm p {
   margin: auto;
-  padding: 5%;
-  background-color: rgba(255, 255, 255, 0.904);
+  padding: 4%;
+  background-color: rgba(236, 235, 235, 1);
+  box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.50);
   text-align: center;
 }
-.label
-{
+.label {
   display: block;
   margin-top: 10px;
   text-align: left;
-  padding-left: 1%;
   color: black;
 }
-.input
-{
-  width: 96%;
+.input {
+  font-size: 17px;
+  width: 100%;
+  display: block;
+  padding: 5px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
 }
-.submitForm
-{
-  width: 99%;
-  margin: 13px 0px;
+.submitForm {
+  font-size: 20px;
+  display: block;
+  width: 100%;
+  margin: 4% 0px;
   font-weight: bold;
+  color: white;
   background-color: rgb(27, 125, 223);
 }
 a {

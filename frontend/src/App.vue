@@ -6,40 +6,65 @@
           <img alt="Groupomania logo" src="./assets/icon-left-font-monochrome-black.svg">
         </router-link>
       </div>
-      <div class="buttons">
-        <router-link to="/registration">s'inscrire</router-link>
-        <router-link to="/connection">se connecter</router-link>
+      <div v-if="connection == false" class="buttons">
+        <router-link to="/registration">Inscription</router-link>
+        <router-link to="/connection">Connection</router-link>
+      </div>
+      <div v-else @click.prevent="logOut" class="buttons">
+        <router-link to="/connection">Déconnection</router-link>
       </div>
     </header>
     <router-view/>
     <footer>
       <nav>
-          <h2>Plan du site</h2>
-          <ul>
-              <li><a href="#">Navigation</a></li>
-              <li><a href="#">Qui nous sommes</a></li>
-              <li><a href="#">Nos autres sites</a></li>
-          </ul>
+        <ul>
+          <li><a href="#">Conditions générales</a></li>
+          <li><a href="#">Confidentialité</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
       </nav>
-      <nav>
-          <h2>Contact</h2>
-          <ul>
-              <li><a href="#">E-mail</a></li>
-              <li><a href="#">Facebook</a></li>
-              <li><a href="#">Twitter</a></li>
-          </ul>
-      </nav>
-      <nav id="copyright">©Copyright 2021 par Tristan Monget. Tous droits réservés.</nav>
+      <nav id="copyright">© Groupomania 2021</nav>
     </footer>
   </div>
 </template>
 
+<script>
+//import router from "./router";
+
+export default {
+  name: "App",
+  data() {
+    return {
+      connection: false
+    }
+  },
+  mounted() {
+    if(localStorage.user)
+      return this.connection= true
+  },
+  methods: {
+    logOut() {
+      localStorage.removeItem('user');
+      //router.push('/connection');
+      return this.connection= false
+    }
+  }
+}
+</script>
+
+
 <style lang="scss">
+@font-face {
+  font-family: "Roboto-Thin";
+  src: local("Roboto-Thin"),
+  url(./fonts/Roboto-Thin.ttf) format("truetype");
+}
 body {
+  background-color: rgba(209, 209, 209, 0.65);
+  font-family: "Roboto-Thin";
   width: 100%;
   margin: 0;
 }
-
 header {
   padding: 5px;
   display: flex;
@@ -71,7 +96,6 @@ header {
     color: black;
   }
 }
-
 @media (max-width: 425px) {
   header {
     flex-direction: column;
@@ -88,50 +112,31 @@ header {
     font-size: 0.8em;
   }
 }
-
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
-
 footer {
-  width: 100%;
   display: flex;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  color: white;
-  justify-content: space-around;
-  background-color: grey;
-  padding-top: 15px;
-  & h2 {
-    margin-block-start: 0px;
-  }
+  flex-direction: column;
+  justify-content: space-between;
+  position: fixed;
+  height: 200px;
+  right: 15%;
+  top: 25%;
+  font-weight: 400;
+  font-size: 20px;
+  padding: 20px 80px 20px 30px;
+  background-color: white;
   & ul {
+    margin: 0px;
     padding-left: 0px;
-    list-style-type: none;
   }
   & ul > li {
     list-style-type: none;
+    margin-bottom: 15px;
     text-align: left;
     & a {
-    color: white;
+    color: black;
     text-decoration: none;
 }
   }
 }
 </style>
+

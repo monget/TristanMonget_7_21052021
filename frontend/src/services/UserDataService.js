@@ -6,7 +6,7 @@ class UserDataService {
   }
 
   find(data) {
-    return http.post("/auth/login", data); //post ??
+    return http.post("/auth/login", data);
   }
 
   update(id, data) {
