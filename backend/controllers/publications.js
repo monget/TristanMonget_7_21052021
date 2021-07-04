@@ -6,6 +6,7 @@ const Comment = db.comment;
 const User = db.user;
 const Like = db.like;
 const fs = require('fs');
+const publication = require("../models/publication");
 
 exports.create = (req, res, next) => {
   Publication.create({
@@ -73,42 +74,6 @@ exports.findOne = (req, res, next) => {
 		.catch(err => res.status(500).send({ message: err.message }));
 };
 
-/*
-exports.findAll = (req, res, next) => {
-	Publication.findAll({
-		include: [{ model: Comment, attributes: {exclude: ['updatedAt', 'publicationId']} , required: false, limit: 99,
-			include: [{ model: User,	attributes: ['pseudo'] }],
-		}],
-		group: ['Publications.id']
-	})
-		.then(publications => {
-			let publicationsComplete = [];
-			publications.forEach(publication => {
-				User.findByPk(publication.dataValues.userId)
-					.then(user =>	{
-						let publicationWithTotalComments = {
-							id: publication.dataValues.id,
-							title: publication.dataValues.title,
-							message: publication.dataValues.message,
-							attachement: publication.dataValues.attachement,
-							like: publication.dataValues.like,
-							createdAt: publication.dataValues.createdAt,
-							updatedAt: publication.dataValues.updatedAt,
-							userId: publication.dataValues.userId,
-							publishedBy: user.dataValues.pseudo,
-							totalComments: publication.dataValues.comments.length,
-							comments: publication.dataValues.comments
-						}
-						publicationsComplete.push(publicationWithTotalComments)
-						if (publications.length === publicationsComplete.length) {
-							res.status(200).json(publicationsComplete)
-						}
-					})			
-			})
-		})
-		.catch(err =>	res.status(400).send({ message: err.message }));
-};*/
-
 exports.findAll = (req, res, next) => {
 	Publication.findAll({
 		attributes: {
@@ -122,6 +87,22 @@ exports.findAll = (req, res, next) => {
 			let arrayPublications = [];
 			publications.forEach(publication => {
 				let creatorPublication = publication.dataValues.user;
+				if (publication.dataValues.TotalComments === 0) {
+					const publicationWithoutComment = {
+						id: publication.dataValues.id,
+						title: publication.dataValues.title,
+						message: publication.dataValues.message,
+						attachement: publication.dataValues.attachement,
+						like: publication.dataValues.like,
+						dislike: publication.dataValues.dislike,
+						createdAt: publication.dataValues.createdAt,
+						updatedAt: publication.dataValues.updatedAt,
+						userId: publication.dataValues.userId,
+						publishedBy: creatorPublication.dataValues.pseudo,
+						totalComments: publication.dataValues.TotalComments,
+					}
+					arrayPublications.push(publicationWithoutComment)
+				}
 				Comment.findAll({ where: { publicationId: publication.dataValues.id } })
 					.then(comments => {
 						let arrayComments = [];
@@ -133,11 +114,13 @@ exports.findAll = (req, res, next) => {
 										message: comment.dataValues.message,
 										attachement: comment.dataValues.attachement,
 										like: comment.dataValues.like,
+										dislike: comment.dataValues.dislike,
 										createdAt: comment.dataValues.createdAt,
 										userId: comment.dataValues.userId,
 										commentedBy: user.dataValues.pseudo
 									}
 									arrayComments.push(objectComments);
+									
 									if (comments.length === arrayComments.length) {										
 										let objectPublication = {
 											id: publication.dataValues.id,
@@ -145,6 +128,7 @@ exports.findAll = (req, res, next) => {
 											message: publication.dataValues.message,
 											attachement: publication.dataValues.attachement,
 											like: publication.dataValues.like,
+											dislike: publication.dataValues.dislike,
 											createdAt: publication.dataValues.createdAt,
 											updatedAt: publication.dataValues.updatedAt,
 											userId: publication.dataValues.userId,
@@ -158,7 +142,7 @@ exports.findAll = (req, res, next) => {
 										}
 									}
 								})	
-						})	
+						})
 					})
 			})
 		})
