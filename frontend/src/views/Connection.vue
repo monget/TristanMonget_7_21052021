@@ -1,27 +1,31 @@
 <template>
   <main>
-    <div class="registration-connection_form">
-      <Form class="connectionForm" @submit="onSubmit" :validation-schema="schema">
+    <ValidationObserver v-slot="{ invalid }" class="registration-connection_form">
+      <form @submit.prevent="logUser" class="connectionForm">
         <h1>Connection</h1>
           <p>
-            <label class="label" for="pseudo">Pseudo :</label>
-            <input class="input" type="text" id="pseudo" name="pseudo" v-model="user.pseudo"/><br />
-            <label class="label" for="password">Mot de passe :</label>
-            <input class="input" type="password" id="password" name="password"/>
-            <button class="submitForm">Valider</button>
+            <ValidationProvider name="Pseudo" rules="requiredPseudo" v-slot="{ errors }">
+              <label class="label" for="pseudo">Pseudo :</label>
+              <input class="input" type="text" id="pseudo" name="pseudo" v-model.trim="user.pseudo"/>
+              <span>{{ errors[0] }}</span>
+            </ValidationProvider>
+
+            <ValidationProvider name="Password" rules="requiredPassword" v-slot="{ errors }">
+              <label class="label" for="password">Mot de passe :</label>
+              <input class="input" type="password" id="password" name="password" v-model="user.password"/>
+              <span>{{ errors[0] }}</span>
+            </ValidationProvider>
+
+            <button class="submitForm" :disabled="invalid">Valider</button>
             <span>Pas encore de compte ? <router-link to="/registration">Inscrivez-vous</router-link></span>
-            
           </p>
-      </Form>
-    </div>
+      </form>
+    </ValidationObserver>
   </main>
 </template>
 
 <script>
 import UserDataService from "../services/UserDataService";
-import { Form } from 'vee-validate';
-import * as Yup from "yup";
-import router from "../router";
 
 export default {
   name: "Connection",
@@ -29,44 +33,27 @@ export default {
     return {
       user: {
         pseudo: "",
+        password: "",
         token: "",
-        published: false
       },
     };
   },
-  components: {
-    Form,
-    //Field,
-    //ErrorMessage,
-  },
-  setup() {
-    function onSubmit(values) {
+  methods: {
+    logUser() {
       const data = {
-        pseudo: values.pseudo,
-        password: values.password
+        pseudo: this.user.pseudo,
+        password: this.user.password
       };
       UserDataService.find(data)
         .then(response => {
           if (response.data.token) {
           localStorage.setItem('user', JSON.stringify(response.data));
-          router.push('/about');
+          this.$router.push('about');
         }})
         .catch(e => {
           console.log(e);
         });
     }
-    const schema = Yup.object().shape({
-      pseudo: Yup.string().required("Merci de renseigner un pseudo"),
-      password: Yup.string().required("Merci de renseigner un mot de passe"),
-    });
-    return {
-      onSubmit,
-      schema,
-    };
-  },
-  mounted() {
-    if(localStorage.pseudo)
-      this.user.pseudo = JSON.parse(localStorage.pseudo);
   }
 };
 </script>
@@ -137,5 +124,8 @@ h1 {
 a {
   text-decoration: none;
   color: blue;
+}
+span {
+  display: block;
 }
 </style>

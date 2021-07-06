@@ -1,63 +1,74 @@
 <template>
   <main>
-    <div class="registration-connection_form">
-      <Form class="registrationForm" @submit="onSubmit" :validation-schema="schema">
+    <ValidationObserver v-slot="{ invalid }" class="registration-connection_form">
+      <form @submit.prevent="createUser" class="registrationForm">
         <h1>Inscription</h1>
         <p>
-          <label class="label" for="pseudo">Pseudo :</label>
-          <input id="pseudo" class="input" type="text" name="pseudo" minlength="3" maxlength="12" placeholder="De 3 à 12 caractères"/>
-          <label class="label" for="password">Mot de passe :</label>
-          <input class="input" type="password" id="password" name="password" minlength="8" placeholder="Au moins 8 caractères"/>
-          <label class="label" for="confirm_password">Confirmez le mot de passe :</label>
-          <input class="input" type="password" id="confirm_password" name="confirm_password" minlength="6"/>
-          <label class="label" for="email">Adresse email :</label>
-          <input class="input" type="email" id="email" name="email"/>
-          <button class="submitForm">Valider</button>
+          <ValidationProvider name="Pseudo" rules="requiredPseudo|min:3|max:12" v-slot="{ errors }">
+            <label class="label" for="pseudo">Pseudo :</label>
+            <input id="pseudo" class="input" type="text" name="pseudo" minlength="3" maxlength="12" placeholder="De 3 à 12 caractères" v-model.trim="pseudo"/>
+            <span>{{ errors[0] }}</span>
+          </ValidationProvider>
+
+          <ValidationProvider name="Password" rules="requiredPassword|min:8|regex" v-slot="{ errors }">
+            <label class="label" for="password">Mot de passe :</label>
+            <input class="input" type="password" id="password" name="password" minlength="8" placeholder="Au moins 8 caractères" v-model="password"/>
+            <span>{{ errors[0] }}</span>
+          </ValidationProvider>
+
+          <ValidationProvider name="ConfirmPassword" rules="requiredConfirmPassword" v-slot="{ errors }">
+            <label class="label" for="confirm_password">Confirmez le mot de passe :</label>
+            <input class="input" type="password" id="confirm_password" name="confirm_password" minlength="8" v-model="confirm_password"/>
+            <span>{{ errors[0] }}</span>
+          </ValidationProvider>
+
+          <ValidationProvider name="Email" rules="requiredEmail|email" v-slot="{ errors }">
+            <label class="label" for="email">Adresse email :</label>
+            <input class="input" type="email" id="email" name="email" v-model="email"/>
+            <span>{{ errors[0] }}</span>
+          </ValidationProvider>
+
+          <button class="submitForm" :disabled="invalid">Valider</button>
           <span>Déjà un compte ? <router-link to="/connection">Connectez-vous</router-link></span><br />
         </p>
-      </Form>
-    </div>
+      </form>
+    </ValidationObserver>
   </main>
 </template>
 
 <script>
+/* import { Form } from 'vee-validate'; */
+
 import UserDataService from "../services/UserDataService";
-import { Form } from 'vee-validate';
-import * as Yup from "yup";
-import router from "../router";
 
 export default {
   name: "Registration",
-  components: {
-    Form,
+  data() {
+    return {
+      pseudo: "",
+      password: "",
+      confirm_password: "",
+      email: ""
+    }
   },
-  setup() {
-    function onSubmit(values) {
+  methods: {
+    createUser(e) {
       const data =  {
-        pseudo: values.pseudo,
-        password: values.password,
-        email: values.email
+        pseudo: this.pseudo,
+        password: this.password,
+        email: this.email
       }
       UserDataService.create(data)
         .then(response => {
-          localStorage.setItem('pseudo', JSON.stringify(values.pseudo));
-          router.push('/connection');
+          localStorage.setItem('pseudo', JSON.stringify(this.pseudo));
+          this.$router.push('connection');
           console.log(response.data);
         })
         .catch(e => {
           console.log(e);
         });
+      e.preventDefault();
     }
-    const schema = Yup.object().shape({
-      pseudo: Yup.string().min(3, "Minimun 3 caractères").max(12, "Maximun 12 caractères").required("Merci de renseigner un pseudo"),
-      email: Yup.string().email("Merci de renseigner un email valide").required("Merci de renseigner un email"),
-      password: Yup.string().min(8, "Le mot de passe doit contenir au minimun 8 caractères").matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-zÀ-ÖØ-öø-ÿ\d@$!%*?&\s_-]{8,}$/, "Minimun un chiffre, une lettre majuscule et une minuscule").required("Merci de renseigner un mot de passe"),
-      confirm_password: Yup.string().required("Merci de confirmer votre mot de passe").oneOf([Yup.ref("password")], "Votre mot de passe ne correspond pas"),
-    });
-    return {
-      onSubmit,
-      schema,
-    };
   }
 };
 </script>
@@ -126,5 +137,8 @@ h1 {
 a {
   text-decoration: none;
   color: blue;
+}
+span {
+  display: block;
 }
 </style>
