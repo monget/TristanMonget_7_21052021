@@ -54,7 +54,7 @@ exports.user = (req, res, next) => {
                   next();
                 }
                 else if (user) {
-                  return res.status(400).json({ message: "Email déjà utilisé." });
+                  return res.status(400).json({ email: ["Email déjà utilisé"] });
                 }
                 else {
                   next();
@@ -62,7 +62,7 @@ exports.user = (req, res, next) => {
               });
           }
           else {
-            return res.status(400).json({ message: "Nom d'utilisateur déjà utilisé" });
+            return res.status(400).json({ user: ["Nom d'utilisateur déjà utilisé"] });
           }
         }
         else {
@@ -72,7 +72,7 @@ exports.user = (req, res, next) => {
                 next();
               }
               else if (user) {
-                return res.status(400).json({ message: "Email déjà utilisé." });
+                return res.status(400).json({ email: ["Email déjà utilisé"] });
               }
               else {
                 next();
@@ -81,13 +81,13 @@ exports.user = (req, res, next) => {
         }
       }
       else if (user) {
-        return res.status(400).json({ message: "Nom d'utilisateur déjà utilisé" });
+        return res.status(400).json({ user: ["Nom d'utilisateur déjà utilisé"] });
       }
       else {
         User.findOne({ where: { email: req.body.email }})
         .then(user => {
           if (user) {
-            return res.status(400).json({ message: "Email déjà utilisé." });
+            return res.status(400).json({ email: ["Email déjà utilisé"] });
           }
           else {
             next();
