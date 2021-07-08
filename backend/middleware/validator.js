@@ -9,7 +9,7 @@ exports.signup = [
 		(req, res, next) => { // Contrôle de l'email
 			const errors = validationResult(req);
 			if (!errors.isEmpty()) {
-				return res.status(400).json({ message: "Merci de renseigner une adresse email valide !" })
+				return res.status(400).json({ email: ["Merci de renseigner une adresse email valide !"] })
 			}
 			else {
 				next();
@@ -20,7 +20,7 @@ exports.signup = [
 		(req, res, next) => { // Contrôle du password
 			const errors = validationResult(req);
 			if (!errors.isEmpty()) {
-				return res.status(400).json({ message: "Le mot de passe doit contenir au minimun 8 caractères dont un chiffre, une lettre majuscule et une minuscule." })
+				return res.status(400).json({ password: ["Le mot de passe doit contenir au minimun 8 caractères dont un chiffre, une lettre majuscule et une minuscule."] })
 			}
 			else {
 				next();
