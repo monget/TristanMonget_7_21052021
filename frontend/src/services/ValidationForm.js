@@ -1,15 +1,16 @@
 import { extend } from 'vee-validate';
 import { required, email, min, max, regex } from 'vee-validate/dist/rules';
 
-
-extend('requiredPseudo', {
+extend('required', {
   ...required,
-  message: 'Merci de renseigner un pseudo'
-});
-
-extend('requiredPassword', {
-  ...required,
-  message: 'Merci de renseigner un mot de passe'
+  params: ['target'],
+  validate(value) {
+    if (value != 0) {
+      return true;
+    }
+    return false;
+  },
+  message: 'Merci de renseigner un {target}'
 });
 
 extend('requiredConfirmPassword', {
@@ -17,9 +18,23 @@ extend('requiredConfirmPassword', {
   message: 'Merci de confirmer votre mot de passe'
 });
 
-extend('requiredEmail', {
-  ...required,
-  message: 'Merci de renseigner un email'
+extend('confirm_password', {
+  params: ['target'],
+  validate(value, { target }) {
+    return value === target;
+  },
+  message: 'Les mots de passe ne correspondent pas !'
+});
+
+extend('ifexist', {
+  params: ['target'],
+  validate(value, { target }) {
+    if (/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-zÀ-ÖØ-öø-ÿ\d@$!%*?&\s_-]{8,}$/.test(target) == true) {
+      return true;
+    }
+    return false;
+  },
+  message: 'Vous n\'avez pas renseigné correctement le mot de passe !'
 });
 
 extend('min', {
