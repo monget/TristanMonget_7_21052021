@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const Likes = sequelize.define("likes", {
+  const Like = sequelize.define("likes", {
     usersLiked: {
       type: Sequelize.BOOLEAN
     },
@@ -8,5 +8,5 @@ module.exports = (sequelize, Sequelize) => {
     }
   });
 
-  return Likes;
+  return Like;
 };
