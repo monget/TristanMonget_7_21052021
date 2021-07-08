@@ -3,6 +3,7 @@ const User = db.user;
 const userId = require("../utils/userId.js");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const user = require("../models/user");
 require('dotenv').config()
 
 exports.signup = (req, res, next) => {
@@ -11,7 +12,21 @@ exports.signup = (req, res, next) => {
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 10)
   })
-    .then(() => res.status(201).json({ message: 'Utilisateur créé !'}))
+    .then(() => {
+      User.findOne({ where: { pseudo: req.body.pseudo }})
+        .then(user => {
+          res.status(200).json({
+            Id: user.id,
+            pseudo: user.pseudo,
+            email: user.email,
+            token: jwt.sign(
+                { userId: user.id},
+                process.env.JWT_SECRET,
+                { expiresIn: process.env.JWT_EXPIRES_IN }
+            ),
+          })
+        })
+    })
     .catch(err => res.status(500).send({ message: err.message }));
 };
 
@@ -39,6 +54,26 @@ exports.login = (req, res, next) => {
             { expiresIn: process.env.JWT_EXPIRES_IN }
         ),
       })
+    })
+    .catch(err => res.status(500).send({ message: err.message }));
+};
+
+exports.getUser = (req, res, next) => {
+  User.findByPk(req.params.id)
+    .then(users => {
+      if (users.dataValues.id === userId(req)) {
+        res.status(200).json(users)
+      }
+      else {
+        const user = {
+          id: users.dataValues.id,
+          pseudo: users.dataValues.pseudo,
+          email: users.dataValues.email,
+          createdAt: users.dataValues.createdAt,
+          updatedAt: users.dataValues.updatedAt
+        }
+        res.status(200).json(user)
+      }
     })
     .catch(err => res.status(500).send({ message: err.message }));
 };
