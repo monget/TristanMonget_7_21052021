@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Registration from '../views/Registration.vue'
 import Connection from '../views/Connection.vue'
+import Profil from '../views/Profil.vue'
 
 Vue.use(VueRouter)
 
@@ -21,6 +22,11 @@ const routes = [
     path: '/connection',
     name: 'Connection',
     component: Connection
+  },
+  {
+    path: '/profil/:id',
+    name: 'Profil',
+    component: Profil
   },
   {
     path: '/about',
