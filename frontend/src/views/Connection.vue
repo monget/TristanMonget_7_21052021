@@ -1,22 +1,22 @@
 <template>
   <main>
-    <ValidationObserver v-slot="{ invalid }" class="registration-connection_form">
-      <form @submit.prevent="logUser" class="connectionForm">
+    <ValidationObserver v-slot="{ handleSubmit }" class="registration-connection_form">
+      <form @submit.prevent="handleSubmit(logUser)" class="connectionForm">
         <h1>Connection</h1>
           <p>
-            <ValidationProvider name="Pseudo" rules="requiredPseudo" v-slot="{ errors }">
+            <ValidationProvider vid="pseudo" name="pseudo" rules="required:@pseudo" v-slot="{ errors }">
               <label class="label" for="pseudo">Pseudo :</label>
               <input class="input" type="text" id="pseudo" name="pseudo" v-model.trim="user.pseudo"/>
               <span>{{ errors[0] }}</span>
             </ValidationProvider>
 
-            <ValidationProvider name="Password" rules="requiredPassword" v-slot="{ errors }">
-              <label class="label" for="password">Mot de passe :</label>
-              <input class="input" type="password" id="password" name="password" v-model="user.password"/>
+            <ValidationProvider ref="error" vid="mot de passe" name="mot de passe" rules="required:@mot de passe" v-slot="{ errors }">
+              <label class="label" for="mot de passe">Mot de passe :</label>
+              <input class="input" type="password" id="mot de passe" name="mot de passe" v-model="user.password"/>
               <span>{{ errors[0] }}</span>
             </ValidationProvider>
 
-            <button class="submitForm" :disabled="invalid">Valider</button>
+            <button class="submitForm" >Valider</button>
             <span>Pas encore de compte ? <router-link to="/registration">Inscrivez-vous</router-link></span>
           </p>
       </form>
@@ -34,7 +34,6 @@ export default {
       user: {
         pseudo: "",
         password: "",
-        token: "",
       },
     };
   },
@@ -44,14 +43,14 @@ export default {
         pseudo: this.user.pseudo,
         password: this.user.password
       };
-      UserDataService.find(data)
+      UserDataService.login(data)
         .then(response => {
           if (response.data.token) {
           localStorage.setItem('user', JSON.stringify(response.data));
-          this.$router.push('about');
+          this.$router.push('/');
         }})
         .catch(e => {
-          console.log(e);
+          this.$refs.error.setErrors([e.response.data.message])
         });
     }
   }
