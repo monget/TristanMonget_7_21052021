@@ -43,11 +43,40 @@ exports.comment = (req, res, next) => {
 };
 
 exports.user = (req, res, next) => {
-  User.findOne({ where: { pseudo: req.body.pseudo }})
-    .then(user => {
-      if (req.method == "PUT") {
-        if (user) {
-          if (user.id == userId(req)) {
+  if (req.method == "GET") {
+    User.findByPk(req.params.id)
+      .then(user => {
+        if (user == null) {
+          res.status(404).send({ message: "Ce profil n'existe pas !" });
+          return res.end();
+        }
+        next()
+      })
+  }
+  else {
+    User.findOne({ where: { pseudo: req.body.pseudo }})
+      .then(user => {
+        if (req.method == "PUT") {
+          if (user) {
+            if (user.id == userId(req)) {
+              User.findOne({ where: { email: req.body.email }})
+                .then(user => {
+                  if ((user == null) || (user.id == userId(req))) {
+                    next();
+                  }
+                  else if (user) {
+                    return res.status(400).json({ email: ["Email déjà utilisé"] });
+                  }
+                  else {
+                    next();
+                  }
+                });
+            }
+            else {
+              return res.status(400).json({ user: ["Nom d'utilisateur déjà utilisé"] });
+            }
+          }
+          else {
             User.findOne({ where: { email: req.body.email }})
               .then(user => {
                 if ((user == null) || (user.id == userId(req))) {
@@ -61,38 +90,21 @@ exports.user = (req, res, next) => {
                 }
               });
           }
-          else {
-            return res.status(400).json({ user: ["Nom d'utilisateur déjà utilisé"] });
-          }
+        }
+        else if (user) {
+          return res.status(400).json({ user: ["Nom d'utilisateur déjà utilisé"] });
         }
         else {
           User.findOne({ where: { email: req.body.email }})
-            .then(user => {
-              if ((user == null) || (user.id == userId(req))) {
-                next();
-              }
-              else if (user) {
-                return res.status(400).json({ email: ["Email déjà utilisé"] });
-              }
-              else {
-                next();
-              }
-            });
+          .then(user => {
+            if (user) {
+              return res.status(400).json({ email: ["Email déjà utilisé"] });
+            }
+            else {
+              next();
+            }
+          });
         }
-      }
-      else if (user) {
-        return res.status(400).json({ user: ["Nom d'utilisateur déjà utilisé"] });
-      }
-      else {
-        User.findOne({ where: { email: req.body.email }})
-        .then(user => {
-          if (user) {
-            return res.status(400).json({ email: ["Email déjà utilisé"] });
-          }
-          else {
-            next();
-          }
-        });
-      }
-    });
+      });
+  }
 };
