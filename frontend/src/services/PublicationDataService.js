@@ -21,8 +21,8 @@ class PublicationDataService {
     return http.get("/publications");
   }
 
-  like(id) {
-    return http.post(`/publications/${id}/like`);
+  like(id, data) {
+    return http.post(`/publications/${id}/like`, data);
   }
 }
 
