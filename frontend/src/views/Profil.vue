@@ -56,8 +56,7 @@ export default {
           this.pseudo = response.data.pseudo,
           this.email = response.data.email,
           this.createdAt = response.data.createdAt,
-          this.updatedAt = response.data.updatedAt,
-          console.log(response.data)
+          this.updatedAt = response.data.updatedAt
         })
         .catch(e => {
           console.log(e);
@@ -149,5 +148,4 @@ aside {
     color: white;
   }
 }
-
 </style>
