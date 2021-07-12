@@ -66,7 +66,7 @@ exports.delete = (req, res, next) => {
 
 exports.findOne = (req, res, next) => {
   Publication.findByPk(req.params.id, {
-		include: [{ model: Comment, attributes: ['message', 'attachement', 'like'], required: false,
+		include: [{ model: Comment, attributes: ['message', 'attachement', 'like', 'dislike'], required: false,
 			include: [{ model: User,	attributes: ['pseudo'] }]
 		}]
 	})
