@@ -1,5 +1,5 @@
 <template>
-  <div class="footer">
+  <div>
     <footer>
       <nav>
         <ul>
@@ -27,7 +27,7 @@ footer {
   position: fixed;
   height: 200px;
   right: 15%;
-  top: 25%;
+  top: 15%;
   font-weight: 400;
   font-size: 20px;
   padding: 20px 80px 20px 30px;

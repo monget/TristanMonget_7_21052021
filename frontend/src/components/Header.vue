@@ -1,6 +1,6 @@
 <template>
-  <div class="header">
-    <header>
+  <div>
+    <head class="head">
       <div class="logo">
         <router-link to="/">
           <img alt="Groupomania logo" src="../assets/icon-left-font-monochrome-black.svg">
@@ -13,7 +13,7 @@
       <!--<div v-else @click.prevent="logOut" class="buttons">
         <router-link to="/connection">Déconnection</router-link>
       </div> -->
-    </header>
+    </head>
   </div>
 </template>
 
@@ -27,15 +27,15 @@ export default {
 </script>
 
 <style lang="scss">
-header {
-  padding: 5px;
+.head {
+  padding-left: 5px;
   display: flex;
   align-items: center;
   border: 1px solid grey;
   background-color: grey;
   justify-content: space-between;
   & .logo {
-    width: 50%;
+    width: 30%;
   }
   img {
     width: 100%;
@@ -59,19 +59,19 @@ header {
   }
 }
 @media (max-width: 425px) {
-  header {
+  .head {
     flex-direction: column;
-  }
-  header .logo {
-    width: 100%;
-    padding-bottom: 15px;
-  }
-  header .buttons {
-    width: 100%;
-  }
-  header .buttons a {
-    padding: 10px;
-    font-size: 0.8em;
+    & .logo {
+      width: 100%;
+      padding-bottom: 15px;
+    }
+    & .buttons {
+      width: 100%;
+      & a {
+        padding: 10px;
+        font-size: 0.8em;
+      }
+    }
   }
 }
 </style>
