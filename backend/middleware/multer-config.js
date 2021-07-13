@@ -3,7 +3,8 @@ const multer = require('multer');
 const MIME_TYPES = {
   'image/jpg': 'jpg',
   'image/jpeg': 'jpg',
-  'image/png': 'png'
+  'image/png': 'png',
+  'image/gif': 'gif'
 };
 
 const storage = multer.diskStorage({
@@ -19,7 +20,7 @@ const storage = multer.diskStorage({
     const originalName = file.originalname.split(' ').join('_');
     const name = originalName.split(".")[0];
     const extension = MIME_TYPES[file.mimetype];
-    var fileTypes = /jpeg|jpg|png/;
+    var fileTypes = /jpeg|jpg|png|gif/;
     var mimetype = fileTypes.test(file.mimetype);
     if (mimetype == true) {
       callback(null, name + Date.now() + '.' + extension);
