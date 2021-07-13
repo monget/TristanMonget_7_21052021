@@ -28,106 +28,44 @@ exports.signup = [
 		}
 ];
 
-exports.createPublication = [
-	check('title').not().isEmpty().trim().blacklist(['$','<>','{}','/']).escape().unescape("&#x27;"),
-	check('message').not().isEmpty().trim().blacklist(['$','<>','{}','/']).escape().unescape("&#x27;"),
+exports.Publication = [
+	check('message').trim().blacklist(['$','<>','{}','/']).escape().unescape("&#x27;"),
 		(req, res, next) => {
 			if (req.file != undefined) {
-				const errors = validationResult(req);
-				if (!errors.isEmpty()) {
-					fs.unlinkSync(`images/publications/${req.file.filename}`)
-					return res.status(400).json({ message: "Merci de renseigner tous les champs !" })
-				}
-				else if (req.file.filename == "error") {
+				if (req.file.filename == "error") {
 					fs.unlinkSync(`images/publications/error`);
-					return res.status(400).json({ message: "Extensions image jpg, jpeg ou bmp seulement autorisées !" })
+					return res.status(400).json({ message: "Extensions image jpg, jpeg, bmp ou gif seulement autorisées !" })
 				}
 				else {
 					next();
 				}
 			}
+			else if (req.body.message.length === 0 && req.file == undefined) {
+				return res.status(400).json({ message: "Votre publication ne peut être vide !" })
+			}
 			else {
-				return res.status(400).json({ message: "Merci d'ajouter une image !" })
+				next();
 			}
 		}
 ];
 
-exports.modifyPublication = [
-	check('title').not().isEmpty().trim().blacklist(['$','<>','{}','/']).escape().unescape("&#x27;"),
-	check('message').not().isEmpty().trim().blacklist(['$','<>','{}','/']).escape().unescape("&#x27;"),
+exports.Comment = [
+	check('message').trim().blacklist(['$','<>','{}','/']).escape().unescape("&#x27;"),
 		(req, res, next) => {
 			if (req.file != undefined) {
-				const errors = validationResult(req);
-				if (!errors.isEmpty()) {
-					fs.unlinkSync(`images/publications/${req.file.filename}`)
-					return res.status(400).json({ message: "Merci de renseigner tous les champs !" })
-				}
-				else {
-					if (req.file == undefined) {
-						next();
-					}
-					else if (req.file.filename == "error") {
-						fs.unlinkSync(`images/publications/error`);
-						return res.status(400).json({ message: "Extensions image jpg, jpeg ou bmp seulement autorisées !" })
-					}
-					else {
-						next();
-					}
-				}
-			}
-			else {
-				return res.status(400).json({ message: "Merci d'ajouter une image !" })
-			}
-		}
-];
-
-exports.createComment = [
-	check('message').not().isEmpty().trim().blacklist(['$','<>','{}','/']).escape().unescape("&#x27;"),
-		(req, res, next) => {
-			if (req.file != undefined) {
-				const errors = validationResult(req);
-				if (!errors.isEmpty()) {
-					fs.unlinkSync(`images/comments/${req.file.filename}`)
-					return res.status(400).json({ message: "Merci de renseigner un message !" })
-				}
-				else if (req.file.filename == "error") {
+				if (req.file.filename == "error") {
 					fs.unlinkSync(`images/comments/error`);
-					return res.status(400).json({ message: "Extensions image jpg, jpeg ou bmp seulement autorisées !" })
+					return res.status(400).json({ image: ["Extensions image jpg, jpeg, bmp ou gif seulement autorisées !"] })
 				}
 				else {
 					next();
 				}
 			}
-			else {
-				return res.status(400).json({ message: "Merci d'ajouter une image !" })
-			}
-		}
-];
-
-exports.modifyComment = [
-	check('message').not().isEmpty().trim().blacklist(['$','<>','{}','/']).escape().unescape("&#x27;"),
-		(req, res, next) => {
-			if (req.file != undefined) {
-				const errors = validationResult(req);
-				if (!errors.isEmpty()) {
-					fs.unlinkSync(`images/comments/${req.file.filename}`)
-					return res.status(400).json({ message: "Merci de renseigner un message !" })
-				}
-				else {
-					if (req.file == undefined) {
-						next();
-					}
-					else if (req.file.filename == "error") {
-						fs.unlinkSync(`images/comments/error`);
-						return res.status(400).json({ message: "Extensions image jpg, jpeg ou bmp seulement autorisées !" })
-					}
-					else {
-						next();
-					}
-				}
+			else if (req.body.message.length === 0 && req.file == undefined) {
+				return res.status(400).json({ commentaire: ["Votre commentaire ne peut être vide !"] })
 			}
 			else {
-				return res.status(400).json({ message: "Merci d'ajouter une image !" })
+				next();
 			}
 		}
 ];
