@@ -9,20 +9,26 @@ const fs = require('fs');
 const publication = require("../models/publication");
 
 exports.create = (req, res, next) => {
-  Publication.create({
-    title: req.body.title,
-		message: req.body.message,
-    attachement: `${req.protocol}://${req.get('host')}/images/publications/${req.file.filename}`,
+	const publicationObject = req.file ? // Contrôle si req.file existe
+	{
+		...req.body,
+		attachement: `${req.protocol}://${req.get('host')}/images/publications/${req.file.filename}`,
 		like: 0,
 		dislike: 0,
 		userId: userId(req)
-  })
+	} : { 
+		...req.body,
+		like: 0,
+		dislike: 0,
+		userId: userId(req)
+	}
+	Publication.create( publicationObject )
     .then(() => res.status(201).json({ message: 'Publication créé !' }))
     .catch(err => res.status(500).send({ message: err.message }));
 };
 
 exports.modify = (req, res, next) => {
-	const publicationObject = req.file ? // Contrôle si req.file existe
+	const publicationObject = req.file ?
 	{
 		...req.body,
 		attachement: `${req.protocol}://${req.get('host')}/images/publications/${req.file.filename}`
@@ -31,8 +37,10 @@ exports.modify = (req, res, next) => {
 		.then(publication => {
 			if (publication.userId == userId(req)) {
 				if (req.file != undefined) {
-					const filename = publication.attachement.split('/images/publications/')[1];
-					fs.unlinkSync(`images/publications/${filename}`)
+					if (publication.attachement != null) {
+						const filename = publication.attachement.split('/images/publications/')[1];
+						fs.unlinkSync(`images/publications/${filename}`)
+					}
 				}
 				Publication.update( publicationObject, { where: { id: req.params.id }})
 					.then(() => res.status(200).json({ message: 'Publication modifiée !' }))
@@ -49,8 +57,8 @@ exports.delete = (req, res, next) => {
 	Publication.findOne({ where: { id: req.params.id }})
 		.then(publication => {
 			if (publication.userId == userId(req)) {
-				const filename = publication.attachement.split('/images/publications/')[1];
-				if (filename != undefined) {
+				if (publication.attachement != null) {
+					const filename = publication.attachement.split('/images/publications/')[1];
 					fs.unlinkSync(`images/publications/${filename}`)
 				}
 				Publication.destroy({	where: { id: req.params.id }})
@@ -90,7 +98,6 @@ exports.findAll = (req, res, next) => {
 				if (publication.dataValues.TotalComments === 0) {
 					const publicationWithoutComment = {
 						id: publication.dataValues.id,
-						title: publication.dataValues.title,
 						message: publication.dataValues.message,
 						attachement: publication.dataValues.attachement,
 						like: publication.dataValues.like,
@@ -124,7 +131,6 @@ exports.findAll = (req, res, next) => {
 									if (comments.length === arrayComments.length) {										
 										let objectPublication = {
 											id: publication.dataValues.id,
-											title: publication.dataValues.title,
 											message: publication.dataValues.message,
 											attachement: publication.dataValues.attachement,
 											like: publication.dataValues.like,
