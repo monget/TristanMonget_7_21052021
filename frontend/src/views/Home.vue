@@ -1,79 +1,82 @@
 <template>
-  <main class="home">
-    <div class="publish">
-      <button>Publiez quelque chose...</button>
-    </div>
-    <div class="publication">
-      <div class="publication__wrap" v-for="(publication, index) in publications" :key="index">
-        <div class="publication__head">
-          <div>
-            {{ publication.publishedBy }} le {{ formatDate(publication.createdAt) }}
-          </div>
-          <button v-if="access(publication.userId)">
-            <img src="../assets/icons/ellipsis-h-solid.svg">
-          </button>
-        </div>
-        <div class="content">
-          <p class="content__title">
-            {{ publication.title }}
-          </p>
-          <a href="#image">
-            <img class="content__attachement" :src="publication.attachement">
-          </a>
-          <div class="content__footer">
-            <div class="like">
-              <div>
-                <button @click="liked(publication.id, index)"><img src="../assets/icons/thumbs-up-regular.svg"></button>
-                {{ publication.like }}
-              </div>
-              <div>
-                <button @click="disliked(publication.id, index)"><img src="../assets/icons/thumbs-down-regular.svg"></button>
-                {{ publication.dislike }}
-              </div>
-            </div>
+  <main>
+    <Publish v-if="showPublish"/>
+    <div class="home">
+      <div class="publish">
+        <button @click="publish()"><img src="http://localhost:3000/images/publications/photo1625062179882.jpg">Publiez quelque chose...</button>
+      </div>
+      <div class="publication">
+        <div class="publication__wrap" v-for="(publication, index) in publications" :key="index">
+          <div class="publication__head">
             <div>
-              <img src="../assets/icons/comment-alt-regular.svg">
-              {{ publication.totalComments }} commentaires
+              {{ publication.publishedBy }} le {{ formatDate(publication.createdAt) }}
+            </div>
+            <button v-if="access(publication.userId)">
+              <img src="../assets/icons/ellipsis-h-solid.svg">
+            </button>
+          </div>
+          <div class="content">
+            <p class="content__title">
+              {{ publication.message }}
+            </p>
+            <a href="#image">
+              <img class="content__attachement" :src="publication.attachement">
+            </a>
+            <div class="content__footer">
+              <div class="like">
+                <div>
+                  <button @click="liked(publication.id, index)"><img src="../assets/icons/thumbs-up-regular.svg"></button>
+                  {{ publication.like }}
+                </div>
+                <div>
+                  <button @click="disliked(publication.id, index)"><img src="../assets/icons/thumbs-down-regular.svg"></button>
+                  {{ publication.dislike }}
+                </div>
+              </div>
+              <div>
+                <img src="../assets/icons/comment-alt-regular.svg">
+                {{ publication.totalComments }} commentaires
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="onTop">
+        <div class="onTop__content">
+          <div class="best">
+            <span>Meilleure publication</span>
+            <div class="best__detail">
+            </div>
+          </div>
+          <div class="horizontal_line"></div>
+          <div class="best">
+            <span>Contributeur au <img src="../assets/icons/hand-point-up-solid.svg"></span>
+            <div class="best__detail">
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="onTop">
-      <div class="onTop__content">
-        <div class="best">
-          <span>Meilleure publication</span>
-          <div class="best__detail">
-          </div>
-        </div>
-        <div class="horizontal_line"></div>
-        <div class="best">
-          <span>Contributeur au <img src="../assets/icons/hand-point-up-solid.svg"></span>
-          <div class="best__detail">
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- <HelloWorld msg="Bienvenue sur Groupomania"/> -->
   </main>
 </template>
 
 <script>
-//import HelloWorld from '@/components/HelloWorld.vue'
+
+import Publish from '@/components/Publish.vue'
 import PublicationDataService from "../services/PublicationDataService";
 import { formatRelative } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 export default {
   name: 'Home',
-  /*components: {
-    HelloWorld
-  }*/
+  components: {
+    Publish
+  },
   data() {
     return {
       publications: [{
         id: null,
-        title : null,
+        message : null,
         publishedBy: null,
         userId: null,
         createdAt: null,
@@ -84,6 +87,7 @@ export default {
       }],
       //publications: [],
       publicationUser: false,
+      showPublish: false,
     };
   },
   beforeMount() {
@@ -135,6 +139,9 @@ export default {
         .catch(e => {
           console.log(e.response);
         });
+    },
+    publish() {
+      return this.showPublish = true;
     }
   }
 }
@@ -152,11 +159,22 @@ export default {
 }
 .publish {
   & button {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
     padding-top: 50px;
     background-color: white;
     border: none;
     font-size: 30px;
-    color: #909090;   
+    color: #909090;
+    & img {
+      object-fit: cover;
+      border-radius: 30px;
+      border: 1px solid;
+      width: 50px;
+      height: 50px;
+      margin-right: 20px;
+    }  
   }
 }
 .publication {

@@ -16,7 +16,7 @@
               <span>{{ errors[0] }}</span>
             </ValidationProvider>
 
-            <button class="submitForm" >Valider</button>
+            <button class="submitForm">Valider</button>
             <span>Pas encore de compte ? <router-link to="/registration">Inscrivez-vous</router-link></span>
           </p>
       </form>
@@ -54,7 +54,7 @@ export default {
         });
     }
   }
-};
+}
 </script>
 
 
