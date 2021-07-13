@@ -7,11 +7,11 @@ const check = require('../middleware/checkExist');
 const validator = require('../middleware/validator');
 const auth = require('../middleware/auth');
 
-router.post('/', auth, multer, validator.createPublication, publicationCrtl.create);
-router.put('/:id', auth, check.publication, multer, validator.modifyPublication, publicationCrtl.modify);
+router.post('/', auth, multer, validator.Publication, publicationCrtl.create);
+router.put('/:id', auth, check.publication, multer, validator.Publication, publicationCrtl.modify);
 router.delete('/:id', auth, check.publication, publicationCrtl.delete);
 router.get('/:id', auth, check.publication, publicationCrtl.findOne);
-router.get('/', auth, publicationCrtl.findAll);
+router.get('/', /*auth,*/ publicationCrtl.findAll);
 router.post('/:id/like', auth, check.publication, publicationCrtl.like);
 
 module.exports = router;
