@@ -6,7 +6,6 @@ const Comment = db.comment;
 const User = db.user;
 const Like = db.like;
 const fs = require('fs');
-const publication = require("../models/publication");
 
 exports.create = (req, res, next) => {
 	const publicationObject = req.file ? // Contrôle si req.file existe
@@ -74,20 +73,83 @@ exports.delete = (req, res, next) => {
 
 exports.findOne = (req, res, next) => {
   Publication.findByPk(req.params.id, {
-		include: [{ model: Comment, attributes: ['message', 'attachement', 'like', 'dislike'], required: false,
-			include: [{ model: User,	attributes: ['pseudo'] }]
-		}]
+		attributes: {
+			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "TotalComments"]]
+		},
+		include: [{	model: Comment, attributes: [] }, { model: User, attributes: ['pseudo', 'attachement'] }
+		],
+    group: ['Publications.id'],
 	})
-		.then(publication => res.status(200).json(publication))
-		.catch(err => res.status(500).send({ message: err.message }));
+		.then(publication => {
+				let creatorPublication = publication.dataValues.user;
+				if (publication.dataValues.TotalComments === 0) {
+					const publicationWithoutComment = {
+						id: publication.dataValues.id,
+						message: publication.dataValues.message,
+						attachement: publication.dataValues.attachement,
+						like: publication.dataValues.like,
+						dislike: publication.dataValues.dislike,
+						createdAt: publication.dataValues.createdAt,
+						updatedAt: publication.dataValues.updatedAt,
+						userId: publication.dataValues.userId,
+						publishedBy: creatorPublication.dataValues.pseudo,
+						avatar: creatorPublication.dataValues.attachement,
+						totalComments: publication.dataValues.TotalComments,
+					}
+					res.status(200).json(publicationWithoutComment)
+				}
+				else {
+					Comment.findAll({ where: { publicationId: publication.dataValues.id } })
+						.then(comments => {
+							let arrayComments = [];
+							comments.forEach(comment => {
+								User.findByPk(comment.dataValues.userId)
+									.then(user => {
+										let objectComments = {
+											id: comment.dataValues.id,
+											message: comment.dataValues.message,
+											attachement: comment.dataValues.attachement,
+											like: comment.dataValues.like,
+											dislike: comment.dataValues.dislike,
+											createdAt: comment.dataValues.createdAt,
+											userId: comment.dataValues.userId,
+											commentedBy: user.dataValues.pseudo,
+											avatar: user.dataValues.attachement
+										}
+										arrayComments.push(objectComments);
+										
+										if (comments.length === arrayComments.length) {										
+											let objectPublication = {
+												id: publication.dataValues.id,
+												message: publication.dataValues.message,
+												attachement: publication.dataValues.attachement,
+												like: publication.dataValues.like,
+												dislike: publication.dataValues.dislike,
+												createdAt: publication.dataValues.createdAt,
+												updatedAt: publication.dataValues.updatedAt,
+												userId: publication.dataValues.userId,
+												publishedBy: creatorPublication.dataValues.pseudo,
+												avatar: creatorPublication.dataValues.attachement,
+												totalComments: publication.dataValues.TotalComments,
+												comments: arrayComments
+											}
+											res.status(200).json(objectPublication)
+										}
+									})	
+							})
+						})
+				}
+		})
+		.catch(err =>	res.status(400).send({ message: err.message }));
 };
+
 
 exports.findAll = (req, res, next) => {
 	Publication.findAll({
 		attributes: {
 			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "TotalComments"]]
 		},
-		include: [{	model: Comment, attributes: [] }, { model: User, attributes: ['pseudo'] }
+		include: [{	model: Comment, attributes: [] }, { model: User, attributes: ['pseudo', 'attachement'] }
 		],
     group: ['Publications.id'],
 	})
@@ -106,6 +168,7 @@ exports.findAll = (req, res, next) => {
 						updatedAt: publication.dataValues.updatedAt,
 						userId: publication.dataValues.userId,
 						publishedBy: creatorPublication.dataValues.pseudo,
+						avatar: creatorPublication.dataValues.attachement,
 						totalComments: publication.dataValues.TotalComments,
 					}
 					arrayPublications.push(publicationWithoutComment)
@@ -124,7 +187,8 @@ exports.findAll = (req, res, next) => {
 										dislike: comment.dataValues.dislike,
 										createdAt: comment.dataValues.createdAt,
 										userId: comment.dataValues.userId,
-										commentedBy: user.dataValues.pseudo
+										commentedBy: user.dataValues.pseudo,
+										avatar: user.dataValues.attachement
 									}
 									arrayComments.push(objectComments);
 									
@@ -139,6 +203,7 @@ exports.findAll = (req, res, next) => {
 											updatedAt: publication.dataValues.updatedAt,
 											userId: publication.dataValues.userId,
 											publishedBy: creatorPublication.dataValues.pseudo,
+											avatar: creatorPublication.dataValues.attachement,
 											totalComments: publication.dataValues.TotalComments,
 											comments: arrayComments
 										}
