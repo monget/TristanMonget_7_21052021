@@ -1,26 +1,27 @@
 <template>
   <main>
-    <Publish v-if="showPublish"/>
+    <Publish v-on:closingPopup="close($event)" v-if="showPublish"/>
     <div class="home">
-      <div class="publish">
-        <button @click="publish()"><img src="http://localhost:3000/images/publications/photo1625062179882.jpg">Publiez quelque chose...</button>
+      <div v-if="connected" class="publish">
+        <button @click="publish()"><img :src="userAvatar">Publiez quelque chose...</button>
       </div>
       <div class="publication">
         <div class="publication__wrap" v-for="(publication, index) in publications" :key="index">
           <div class="publication__head">
-            <div>
-              {{ publication.publishedBy }} le {{ formatDate(publication.createdAt) }}
-            </div>
+            <a class="profil" :href="'profil/' + publication.userId">
+              <img class="profil__avatar" :src="publication.avatar" :title="publication.publishedBy">
+              {{ publication.publishedBy }} .{{ formatDate(publication.createdAt) }}
+            </a>
             <button v-if="access(publication.userId)">
               <img src="../assets/icons/ellipsis-h-solid.svg">
             </button>
           </div>
           <div class="content">
-            <p class="content__title">
-              {{ publication.message }}
-            </p>
-            <a href="#image">
-              <img class="content__attachement" :src="publication.attachement">
+            <a :href="'publication/' + publication.id">
+              <p class="content__message">
+                {{ publication.message }}
+              </p>
+              <img v-if="publication.attachement" class="content__attachement" :src="publication.attachement">
             </a>
             <div class="content__footer">
               <div class="like">
@@ -46,6 +47,7 @@
           <div class="best">
             <span>Meilleure publication</span>
             <div class="best__detail">
+              {{ topPublicationId }}
             </div>
           </div>
           <div class="horizontal_line"></div>
@@ -61,10 +63,9 @@
 </template>
 
 <script>
-
 import Publish from '@/components/Publish.vue'
 import PublicationDataService from "../services/PublicationDataService";
-import { formatRelative } from 'date-fns'
+import { formatDistance, subDays } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 export default {
@@ -74,37 +75,44 @@ export default {
   },
   data() {
     return {
-      publications: [{
-        id: null,
-        message : null,
-        publishedBy: null,
-        userId: null,
-        createdAt: null,
-        attachement: null,
-        like: null,
-        dislike: null,
-        totalComments: null
-      }],
-      //publications: [],
-      publicationUser: false,
+      publications: [],
+      topPublicationId: null,
+      userAvatar: null,
       showPublish: false,
+      connected: false
     };
   },
   beforeMount() {
     this.setup();
+    this.avatar();
   },
   methods: {
     setup() {
       PublicationDataService.findAll()
         .then(response => {
-          this.publications = response.data       
+          this.publications = response.data
+          let bestPublication = []
+          let countlikes = []
+          this.publications.forEach(publication => {
+            bestPublication.push(publication.id)
+            countlikes.push(publication.like)
+          });
+          const indexOfMaxValue = countlikes.indexOf(Math.max(...countlikes));
+          this.topPublicationId = bestPublication[indexOfMaxValue]
         })
         .catch(e => {
           console.log(e);
         });
     },
+    avatar() {
+      if (localStorage.user) {
+        let user = JSON.parse(localStorage.getItem('user'));
+        this.userAvatar = user.avatar;
+        this.connected = true;
+      }
+    },
     formatDate(date) {
-      return formatRelative(new Date(date), new Date(), { locale: fr })
+      return formatDistance(subDays(new Date(date), 0), new Date(), { locale: fr })
     },
     access(userId) {
       if (localStorage.user) {
@@ -142,12 +150,15 @@ export default {
     },
     publish() {
       return this.showPublish = true;
+    },
+    close(condition) {
+      return this.showPublish = condition;
     }
   }
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @font-face {
   font-family: "Roboto-Regular";
   src: local("Roboto-Regular"),
@@ -202,10 +213,22 @@ export default {
     }
   }
 }
+.profil  {
+  display: flex;
+  align-items: center;
+  &__avatar {
+    object-fit: cover;
+    border-radius: 30px;
+    border: 1px solid;
+    width: 50px;
+    height: 50px;
+    margin-right: 20px;
+  }
+}
 .content {
   margin: 0px 15px;
-  &__title {
-    margin: 5px 0px;
+  &__message {
+    margin: 10px 0px 20px;
     color: white;
   }
   &__attachement {
