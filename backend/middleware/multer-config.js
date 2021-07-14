@@ -12,6 +12,9 @@ const storage = multer.diskStorage({
     if (req.baseUrl == "/api/comments") {
       callback(null, 'images/comments');
     }
+    else if (req.baseUrl == "/api/auth") {
+      callback(null, 'images/users');
+    }
     else {
       callback(null, 'images/publications');
     }
