@@ -34,7 +34,7 @@ exports.Publication = [
 			if (req.file != undefined) {
 				if (req.file.filename == "error") {
 					fs.unlinkSync(`images/publications/error`);
-					return res.status(400).json({ message: "Extensions image jpg, jpeg, bmp ou gif seulement autorisées !" })
+					return res.status(400).json({ message: "jpg, jpeg, bmp ou gif seulement !" })
 				}
 				else {
 					next();
@@ -55,14 +55,14 @@ exports.Comment = [
 			if (req.file != undefined) {
 				if (req.file.filename == "error") {
 					fs.unlinkSync(`images/comments/error`);
-					return res.status(400).json({ image: ["Extensions image jpg, jpeg, bmp ou gif seulement autorisées !"] })
+					return res.status(400).json({ message: "jpg, jpeg, bmp ou gif seulement !" })
 				}
 				else {
 					next();
 				}
 			}
 			else if (req.body.message.length === 0 && req.file == undefined) {
-				return res.status(400).json({ commentaire: ["Votre commentaire ne peut être vide !"] })
+				return res.status(400).json({ message: "Votre commentaire ne peut être vide !" })
 			}
 			else {
 				next();
