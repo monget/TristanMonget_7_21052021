@@ -41,7 +41,7 @@ extend('min', {
   ...min,
   params: ['min'],
   validate: (value, { min }) => {
-    if (min < value.length) {
+    if (min <= value.length) {
       return true;
     }
     return false;
@@ -62,6 +62,6 @@ extend('email', {
 extend('regex', {
   ...regex,
   validate: value =>
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-zÀ-ÖØ-öø-ÿ\d@$!%*?&\s_-]{8,}$/.test(value),
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-zÀ-ÖØ-öø-ÿ\d@$!%*?&\s_-]{7,}$/.test(value),
   message: 'Minimun un chiffre, une lettre majuscule et une minuscule'
 });
