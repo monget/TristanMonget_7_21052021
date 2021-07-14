@@ -3,14 +3,15 @@ const User = db.user;
 const userId = require("../utils/userId.js");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const user = require("../models/user");
+const fs = require('fs');
 require('dotenv').config()
 
 exports.signup = (req, res, next) => {
   User.create({
     pseudo: req.body.pseudo,
     email: req.body.email,
-    password: bcrypt.hashSync(req.body.password, 10)
+    password: bcrypt.hashSync(req.body.password, 10),
+    attachement: `${req.protocol}://${req.get('host')}/images/users/avatarDefault.svg`,
   })
     .then(() => {
       User.findOne({ where: { pseudo: req.body.pseudo }})
@@ -19,6 +20,7 @@ exports.signup = (req, res, next) => {
             Id: user.id,
             pseudo: user.pseudo,
             email: user.email,
+            avatar: user.attachement,
             token: jwt.sign(
                 { userId: user.id},
                 process.env.JWT_SECRET,
@@ -48,6 +50,7 @@ exports.login = (req, res, next) => {
         Id: user.id,
         pseudo: user.pseudo,
         email: user.email,
+        avatar: user.attachement,
         token: jwt.sign(
             { userId: user.id},
             process.env.JWT_SECRET,
@@ -62,13 +65,23 @@ exports.getUser = (req, res, next) => {
   User.findByPk(req.params.id)
     .then(users => {
       if (users.dataValues.id === userId(req)) {
-        res.status(200).json(users)
+        const user = {
+          id: users.dataValues.id,
+          pseudo: users.dataValues.pseudo,
+          password: users.dataValues.password,
+          email: users.dataValues.email,
+          avatar: users.dataValues.attachement,
+          createdAt: users.dataValues.createdAt,
+          updatedAt: users.dataValues.updatedAt
+        }
+        res.status(200).json(user)
       }
       else {
         const user = {
           id: users.dataValues.id,
           pseudo: users.dataValues.pseudo,
           email: users.dataValues.email,
+          avatar: users.dataValues.attachement,
           createdAt: users.dataValues.createdAt,
           updatedAt: users.dataValues.updatedAt
         }
@@ -79,15 +92,24 @@ exports.getUser = (req, res, next) => {
 };
 
 exports.editProfil = (req, res, next) => {
+  const userObject = req.file ?
+  {
+    ...req.body,
+    attachement: `${req.protocol}://${req.get('host')}/images/users/${req.file.filename}`,
+    password: bcrypt.hashSync(req.body.password, 10)
+  } : { ...req.body, password: bcrypt.hashSync(req.body.password, 10) }
   User.findByPk(req.params.id)
     .then(user => {
       if (user.id == userId(req)) {
-        User.update({
-          pseudo: req.body.pseudo,
-          email: req.body.email,
-          password: bcrypt.hashSync(req.body.password, 10)
-        },
-        { where: { id: req.params.id }})
+        if (req.file != undefined) {
+					if (user.attachement != null) {
+						const filename = user.attachement.split('/images/users/')[1];
+            if (filename != "avatarDefault.svg") {
+              fs.unlinkSync(`images/users/${filename}`)
+            }
+					}
+				}
+        User.update( userObject, { where: { id: req.params.id }})
           .then(() => res.status(200).json({ message: 'Profil modifié !'}))
           .catch(err => res.status(500).send({ message: err.message }));
       }
@@ -95,12 +117,19 @@ exports.editProfil = (req, res, next) => {
         return res.status(400).json({ message: "Opération interdite !"})
       }
     })
+    .catch(error => res.status(400).json({ error }));
 };
 
 exports.deleteProfil = (req, res, next) => {
   User.findByPk(req.params.id)
     .then(user => {
       if (user.id == userId(req)) {
+        if (user.attachement != null) {
+					const filename = user.attachement.split('/images/users/')[1];
+          if (filename != "avatarDefault.svg") {
+            fs.unlinkSync(`images/users/${filename}`)
+          }
+				}
         User.destroy({ where: { id: req.params.id }})
           .then(() => res.status(200).json({ message: 'Profil supprimé !'}))
           .catch(err => res.status(500).send({ message: err.message }));
