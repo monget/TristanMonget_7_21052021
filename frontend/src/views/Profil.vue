@@ -2,31 +2,34 @@
   <main>
     <div class="profil">
       <div class="profil__wrap">
-        <div class="info">
           <div>
-            <p>Pseudo :</p>
-            <p class="info__value">{{ pseudo }}</p>
+            <img class="avatar" :src="user.avatar">
           </div>
-          <div>
-            <p>Email :</p>
-            <p class="info__value">{{ email }}</p>
+          <div class="information">
+            <div class=information__content>
+              <p class="information__name">Pseudo :</p>
+              <p class="information__value">{{ user.pseudo }}</p>
+            </div>
+            <div class=information__content>
+              <p class="information__name">Email :</p>
+              <p class="information__value">{{ user.email }}</p>
+            </div>
+            <div class=information__content>
+              <p class="information__name">Date de naissance :</p>
+              <p class="information__value">../../..</p>
+            </div>
+            <div class=information__content>
+              <p class="information__name">Poste occupé :</p>
+              <p class="information__value"></p>
+            </div>
+            <p class="information__name">Descriptif :</p>
+            <textarea></textarea>
+            <button v-if="access(user.id)" class="editProfil"><router-link to="/profil">Modifier le profil</router-link></button>
           </div>
-          <div>
-            <p>Date de naissance :</p>
-            <p class="info__value">../../..</p>
-          </div>
-          <div>
-            <p>Poste occupé :</p>
-            <p class="info__value"></p>
-          </div>
-          <p>Descriptif :</p>
-          <textarea></textarea>
-          <button class="editProfil"><router-link to="/profil">Modifier le profil</router-link></button>
-        </div>
       </div>
     </div>
     <aside>
-      <button>Supprimer le profil</button>
+      <button v-if="access(user.id)" @click="deleteUser(user.id)">Supprimer le profil</button>
     </aside>
   </main>
 </template>
@@ -38,11 +41,7 @@ export default {
   name: "Profil",
   data() {
     return {
-      id: null,
-      pseudo: null,
-      email: null,
-      createdAt: null,
-      updatedAt: null
+      user: []
     };
   },
   beforeMount() {
@@ -52,12 +51,27 @@ export default {
     setup(id) {
       UserDataService.find(id)
         .then(response => {
-          this.id = response.data.id,
-          this.pseudo = response.data.pseudo,
-          this.email = response.data.email,
-          this.createdAt = response.data.createdAt,
-          this.updatedAt = response.data.updatedAt
+          this.user = response.data
         })
+        .catch(e => {
+          console.log(e);
+        });
+    },
+    access(userid) {
+      if (localStorage.user) {
+        let user = JSON.parse(localStorage.getItem('user'));
+        if (user.Id === userid) {
+          return true
+        }
+      }
+      return false
+    },
+    deleteUser(id) {
+      UserDataService.delete(id)
+        .then(
+          UserDataService.logout(),
+          this.$router.push('/')
+        )
         .catch(e => {
           console.log(e);
         });
@@ -84,26 +98,30 @@ export default {
     width: 55%;
     background-color: white;
     border-radius: 30px;
+    border: 1px solid;
   }
 }
-.info {
-  &__value {
-    margin-left: 5px;
-  }
-  & div {
+.avatar {
+  display: flex;
+  object-fit: cover;
+  border-radius: 100px;
+  border: 1px solid;
+  width: 150px;
+  height: 150px;
+  margin: 2% 0 0 auto;
+}
+.information {
+  display: block;
+  margin-top: -35px;
+  &__content {
     display: flex;
   }
-} 
-h1 {
-  margin: 0px;
-  font-family: "Roboto-Medium";
-  font-weight: 500;
-  font-size: 45px;
-  text-align: center;
-  padding: 15px 0;
-}
-p {
-  margin: 10px 0;
+  &__name {
+    margin: 10px 0;
+  }
+  &__value {
+    margin: 10px 0 10px 10px;
+  }
 }
 textarea {
   width: 100%;
@@ -135,7 +153,7 @@ a {
 aside {
   position: fixed;
   right: 15%;
-  top: 57%;
+  top: 50%;
   font-weight: 400;
   & button {
     cursor: pointer;
