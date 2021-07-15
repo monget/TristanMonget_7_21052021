@@ -21,8 +21,30 @@ exports.create = (req, res, next) => {
 		dislike: 0,
 		userId: userId(req)
 	}
-	Publication.create( publicationObject )
-    .then(() => res.status(201).json({ message: 'Publication créé !' }))
+	Publication.create(publicationObject)
+		.then(result => {
+			Publication.findByPk(result.id, {
+				include: [{ model: User, attributes: ['pseudo', 'attachement'] }]
+			})
+				.then(publication => {
+					let creatorPublication = publication.dataValues.user;
+					const newPublication = {
+						id: publication.dataValues.id,
+						message: publication.dataValues.message,
+						attachement: publication.dataValues.attachement,
+						like: publication.dataValues.like,
+						dislike: publication.dataValues.dislike,
+						createdAt: publication.dataValues.createdAt,
+						updatedAt: publication.dataValues.updatedAt,
+						userId: publication.dataValues.userId,
+						publishedBy: creatorPublication.dataValues.pseudo,
+						avatar: creatorPublication.dataValues.attachement,
+						totalComments: 0,
+					}
+					res.status(200).json(newPublication)
+				})
+				.catch(err =>	res.status(400).send({ message: err.message }));
+		})
     .catch(err => res.status(500).send({ message: err.message }));
 };
 
@@ -42,7 +64,7 @@ exports.modify = (req, res, next) => {
 					}
 				}
 				Publication.update( publicationObject, { where: { id: req.params.id }})
-					.then(() => res.status(200).json({ message: 'Publication modifiée !' }))
+					.then(() => res.status(200).json( publicationObject ))
 					.catch(err => res.status(400).json({ message: err.message }));		
 			}
 			else {
@@ -71,7 +93,7 @@ exports.delete = (req, res, next) => {
 		.catch(error => res.status(400).json({ error }));
 };
 
-exports.findOne = (req, res, next) => {
+exports.findOne = (req, res, next) => { // voir avec le token.id pour récupérer l'état des likes/dislike du user
   Publication.findByPk(req.params.id, {
 		attributes: {
 			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "TotalComments"]]
@@ -146,6 +168,9 @@ exports.findOne = (req, res, next) => {
 
 exports.findAll = (req, res, next) => {
 	Publication.findAll({
+		order: [
+			['id', 'DESC']
+		],
 		attributes: {
 			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "TotalComments"]]
 		},
