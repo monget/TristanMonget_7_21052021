@@ -1,6 +1,7 @@
 <template>
   <main>
-    <Publish v-on:closingPopup="close($event)" v-if="showPublish"/>
+    <Delete msg="publication" :id="deleteId" v-on:closingPopupDelete="closeDelete($event)" v-if="showDelete"/>
+    <Publish v-on:closingPopupPublish="close($event)" v-if="showPublish" @postPublication="addPost($event)"/>
     <div class="home">
       <div v-if="connected" class="publish">
         <button @click="publish()"><img :src="userAvatar">Publiez quelque chose...</button>
@@ -12,9 +13,14 @@
               <img class="profil__avatar" :src="publication.avatar" :title="publication.publishedBy">
               {{ publication.publishedBy }} .{{ formatDate(publication.createdAt) }}
             </a>
-            <button v-if="access(publication.userId)">
-              <img src="../assets/icons/ellipsis-h-solid.svg">
-            </button>
+            <div class="publication__options" v-if="access(publication.userId)">
+              <button @click="editPublication(publication.id)"> <!-- faire la fonction editPublication -->
+                <img src="../assets/icons/edit-solid.svg">
+              </button>
+              <button @click="deleted(publication.id)">
+                <img src="../assets/icons/trash-alt-solid.svg">
+              </button>
+            </div>
           </div>
           <div class="content">
             <a :href="'publication/' + publication.id">
@@ -64,6 +70,7 @@
 
 <script>
 import Publish from '@/components/Publish.vue'
+import Delete from '@/components/Delete.vue'
 import PublicationDataService from "../services/PublicationDataService";
 import { formatDistance, subDays } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -71,7 +78,8 @@ import { fr } from 'date-fns/locale'
 export default {
   name: 'Home',
   components: {
-    Publish
+    Publish,
+    Delete
   },
   data() {
     return {
@@ -79,7 +87,9 @@ export default {
       topPublicationId: null,
       userAvatar: null,
       showPublish: false,
-      connected: false
+      showDelete: false,
+      connected: false,
+      deleteId: null
     };
   },
   beforeMount() {
@@ -148,11 +158,27 @@ export default {
           console.log(e.response);
         });
     },
+    addPost(data) {
+      this.publications.unshift(data)
+    },
+    editPublication() {
+      
+    },
+    deletePublication() {
+
+    },
     publish() {
       return this.showPublish = true;
     },
     close(condition) {
       return this.showPublish = condition;
+    },
+    deleted(id) {
+      return this.showDelete = true,
+      this.deleteId = (id);
+    },
+    closeDelete(condition) {
+      return this.showDelete = condition;
     }
   }
 }
@@ -203,12 +229,17 @@ export default {
   &__head {
     display: flex;
     justify-content: space-between;
+  }
+  &__options {
+    width: 20%;
+    display: flex;
+    justify-content: space-between;
     & button {
       cursor: pointer;
       background: #909090;
       border: none;
       & img {
-        width: 30px;
+        height: 30px;
       }
     }
   }
