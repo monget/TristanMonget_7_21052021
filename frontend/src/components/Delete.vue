@@ -4,7 +4,7 @@
         <div class="delete__title">
           Cette opération est définitive !
         </div>
-        <p class="delete__message">Vous confirmez la suppresion de votre {{ msg }} ?</p>
+        <p class="delete__message">Vous confirmez la suppresion de votre {{ message }} ?</p>
         <div class="delete__footer">
           <button @click="close()">
             <img src="../assets/icons/times-solid-red.svg">
@@ -25,8 +25,8 @@ import PublicationDataService from "../services/PublicationDataService";
 export default {
   name: 'Publish',
   props: {
-    msg: String,
-    id: Number
+    id: Number,
+    message: String
   },
   methods: {
     deleted(value) {
@@ -34,16 +34,17 @@ export default {
         UserDataService.delete(this.$route.params.id)
           .then(
             UserDataService.logout(),
-            this.$router.push('/')
+            this.$router.push('/connection')
           )
           .catch(e => {
             console.log(e);
           });
       }
       else if (value == 'publication') {
-        PublicationDataService.delete(this.id) // ajouter supression de la vue
-          .then( 
-            this.$emit('closingPopupDelete', false)
+        PublicationDataService.delete(this.id)
+          .then(
+            this.$emit('delete-publication'),
+            this.$emit('closing-popup-delete', false)
           )
           .catch(e => {
             console.log(e);
@@ -52,7 +53,7 @@ export default {
       
     },
     close() {
-      this.$emit('closingPopupDelete', false);
+      this.$emit('closing-popup-delete', false);
     }
   }
 }
