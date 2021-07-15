@@ -47,8 +47,8 @@ export default {
       PublicationDataService.create(data)
         .then(response => {
           if (response) {
-            this.$emit('postPublication', response.data)
-            this.$emit('closingPopupPublish', false)
+            this.$emit('add-publication', response.data)
+            this.$emit('closing-popup-publish', false)
           }
         })
         .catch(e => {
@@ -59,7 +59,7 @@ export default {
       this.image = event.target.files[0]
     },
     close() {
-      this.$emit('closingPopupPublish', false);
+      this.$emit('closing-popup-publish', false);
     }
   }
 }
