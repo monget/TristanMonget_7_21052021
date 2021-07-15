@@ -1,5 +1,10 @@
 module.exports = (sequelize, Sequelize) => {
   const Publication = sequelize.define("publications", {
+    id: {
+      type: Sequelize.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
     message: {
       type: Sequelize.TEXT
     },
