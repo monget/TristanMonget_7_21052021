@@ -1,24 +1,25 @@
 <template>
   <main>
     <div class="home">
-      <div class="publish">
-      </div>
       <div class="publication">
         <div class="publication__wrap">
           <div class="publication__head">
-            <a class="profil" :href="'../profil/' + publication.userId">
-              <img class="publication__avatar" :src="publication.avatar">
-              {{ publication.publishedBy }} . {{ formatDate(createdAt) }}
-            </a>
+            <div class="profil">
+              <a class="profil__link" :href="'../profil/' + publication.userId">
+                <img class="profil__avatar" :src="publication.avatar" :title="publication.publishedBy">
+                <span>{{ publication.publishedBy }}</span>
+              </a>
+              <span class="profil__date">.{{ formatDate(createdAt) }}</span>
+            </div>
             <button class="publication__close" @click="close()">
               <img src="../assets/icons/times-solid.svg">
             </button>
           </div>
           <div class="content">
-            <p class="content__title">
+            <p class="content__message" v-if="publication.message">
               {{ publication.message }}
             </p>
-            <img v-if="publication.attachement" class="content__attachement" :src="publication.attachement">
+            <img class="content__attachement" v-if="publication.attachement" :src="publication.attachement">
             <div class="content__footer">
               <div class="like">
                 <div>
@@ -121,27 +122,6 @@ export default {
 }
 .home {
   padding-left: 120px;
-  background-color: white;
-}
-.publish {
-  & button {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    padding-top: 50px;
-    background-color: white;
-    border: none;
-    font-size: 30px;
-    color: #909090;
-    & img {
-      object-fit: cover;
-      border-radius: 30px;
-      border: 1px solid;
-      width: 50px;
-      height: 50px;
-      margin-right: 20px;
-    }  
-  }
 }
 .publication {
   font-family: "Roboto-Regular";
@@ -158,18 +138,11 @@ export default {
   &__head {
     display: flex;
     justify-content: space-between;
+    margin-bottom: 15px;
     & a {
       display: flex;
       align-items: center;
     }
-  }
-  &__avatar {
-    object-fit: cover;
-    border-radius: 30px;
-    border: 1px solid;
-    width: 50px;
-    height: 50px;
-    margin-right: 20px;
   }
   &__close {
     cursor: pointer;
@@ -180,23 +153,51 @@ export default {
     }
   }
 }
-.content {
-  margin: 0px 15px;
-  &__title {
-    margin: 5px 0px;
+
+.profil {
+  display: flex;
+  align-items: center;
+  &__link { 
+    display: flex;
+    align-items: center;
     color: white;
+  }
+  &__avatar {
+    object-fit: cover;
+    border-radius: 30px;
+    border: 1px solid;
+    width: 50px;
+    height: 50px;
+    margin-right: 20px;
+    color: black;
+  }
+  &__date {
+    color: white;
+    font-size: 19px;
+    margin-top: 9px;
+  }
+}
+
+
+.content {
+  padding: 1%;
+  background-color: white;
+  border-radius: 0px 0px 10px 10px;
+  &__message {
+    margin: 10px 0px 20px;
   }
   &__attachement {
     width: 100%;
   }
   &__footer {
-    font-size: 25px;
+    color: #909090;
+    font-size: 28px;
     display: flex;
     margin: 5px 0px;
     justify-content: space-between;
     & div {
       display: flex;
-      color: white;
+      align-items: center;
     }
     & img {
       width: 35px;
@@ -211,7 +212,7 @@ export default {
   & button {
     cursor: pointer;
     border: none;
-    background-color: #909090;
+    background-color: white;
   }
 }
 a {
