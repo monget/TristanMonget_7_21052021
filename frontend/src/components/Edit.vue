@@ -8,13 +8,13 @@
         <form @submit.prevent="handleSubmit(editPublication)" class="form">
           <div class="form__wrap">
             <ValidationProvider ref="error" vid="comment" name="comment" v-slot="{ errors }">
-              <label class="content__title" for="comment">Commentaire : {{ id }}</label>
-              <textarea class="content__textarea" type="text" id="comment" name="comment" v-model="message"/>
+              <textarea class="content__textarea" type="text" id="comment" name="comment" v-model="newMessage"/>
               <span class="content__error">{{ errors[0] }}</span>
             </ValidationProvider>
+            <img class="content__attachement" :src="displayFile()" v-if="attachement || image"/>
             <div class="footer__wrap">
               <div class="add_file">
-                <label for="file">Ajouter <img src="../assets/icons/file-image-regular.svg"></label>
+                <label for="file"> {{ attachement ? 'Modifier' : 'Ajouter' }} <img src="../assets/icons/file-image-regular.svg"></label>
                 <input @change="fileSelected" type="file" name="file" id="file" class="inputfile" />
               </div>
               <div><button class="validate"><img src="../assets/icons/paper-plane-regular.svg"></button></div>
@@ -36,17 +36,22 @@ export default {
     message: String,
     attachement: String
   },
+  data() {
+    return {
+      newMessage: this.message,
+      image: null
+    };
+  },
   methods: {
     editPublication() {
       const data = new FormData();
-      if (this.attachement != null) {
-        data.append('image', this.attachement, this.attachement.name)
+      if (this.image != null) {
+        data.append('image', this.image, this.image.name)
       }
-      data.append('message', this.message)
+      data.append('message', this.newMessage)
       PublicationDataService.update(this.id, data)
         .then(response => {
           if (response) {
-            console.log("edit-ok")
             this.$emit('edit-publication', response.data)
             this.$emit('closing-popup-edit', false)
           }
@@ -60,6 +65,12 @@ export default {
     },
     close() {
       this.$emit('closing-popup-edit', false);
+    },
+    displayFile() {
+      if (this.image != null) {
+        return this.url = URL.createObjectURL(this.image);
+      }
+      return this.attachement
     }
   }
 }
@@ -120,7 +131,7 @@ export default {
   }
   &__textarea {
     font-family: "Roboto-Regular";
-    font-size: 20px;
+    font-size: 30px;
     width: 100%;
     padding: 5px;
     margin-bottom: 10px;
@@ -132,6 +143,11 @@ export default {
     text-align: center;
     font-size: 26px;
     color: red;
+  }
+  &__attachement {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
   }
 }
 .footer__wrap {
