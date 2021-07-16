@@ -8,13 +8,13 @@
         <form @submit.prevent="handleSubmit(postPublication)" class="form">
           <div class="form__wrap">
             <ValidationProvider ref="error" vid="comment" name="comment" v-slot="{ errors }">
-              <label class="content__title" for="comment">Commentaire :</label>
               <textarea class="content__textarea" type="text" id="comment" name="comment" v-model="message"/>
               <span class="content__error">{{ errors[0] }}</span>
             </ValidationProvider>
+            <img class="content__attachement" :src="displayFile()" v-if="image"/>
             <div class="footer__wrap">
               <div class="add_file">
-                <label for="file">Ajouter <img src="../assets/icons/file-image-regular.svg"></label>
+                <label for="file">Ajouter<img src="../assets/icons/file-image-regular.svg"></label>
                 <input @change="fileSelected" type="file" name="file" id="file" class="inputfile" />
               </div>
               <div><button class="validate"><img src="../assets/icons/paper-plane-regular.svg"></button></div>
@@ -57,6 +57,12 @@ export default {
     },
     fileSelected(event) {
       this.image = event.target.files[0]
+    },
+    displayFile() {
+      console.log("test")
+      if (this.image != null) {
+        return this.url = URL.createObjectURL(this.image);
+      }
     },
     close() {
       this.$emit('closing-popup-publish', false);
@@ -120,7 +126,7 @@ export default {
   }
   &__textarea {
     font-family: "Roboto-Regular";
-    font-size: 20px;
+    font-size: 30px;
     width: 100%;
     padding: 5px;
     margin-bottom: 10px;
@@ -132,6 +138,11 @@ export default {
     text-align: center;
     font-size: 26px;
     color: red;
+  }
+  &__attachement {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
   }
 }
 .footer__wrap {
