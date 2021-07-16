@@ -3,7 +3,7 @@
     <Publish
       v-if="publish"
       @add-publication="addPublication($event)"
-      v-on:closing-popup-publish="closePublish($event)"
+      @closing-popup-publish="closePublish($event)"
     />
     <Edit
       v-if="edit"
@@ -11,14 +11,14 @@
       :message="publicationEdit.message"
       :attachement="publicationEdit.attachement"
       @edit-publication="editPublication($event)"
-      v-on:closing-popup-edit="closeEdit($event)"
+      @closing-popup-edit="closeEdit($event)"
     />
     <Delete
       v-if="deleted"
       message="publication"
       :id="publicationDelete.id"
       @delete-publication="deletePublication()"
-      v-on:closing-popup-delete="closeDelete($event)"
+      @closing-popup-delete="closeDelete($event)"
     />
     <div class="home" >
       <button class="publish__button" v-if="connected" @click="showPublish()">
@@ -28,10 +28,13 @@
       <div class="publication">
         <div class="publication__wrap" v-for="(publication, index) in publications" :key="index">
           <div class="publication__head">
-            <a class="profil" :href="'profil/' + publication.userId">
-              <img class="profil__avatar" :src="publication.avatar" :title="publication.publishedBy">
-              {{ publication.publishedBy }} .{{ formatDate(publication.createdAt) }}
-            </a>
+            <div class="profil">
+              <a class="profil__link" :href="'profil/' + publication.userId">
+                <img class="profil__avatar" :src="publication.avatar" :title="publication.publishedBy">
+                <span>{{ publication.publishedBy }}</span>
+              </a>
+              <span class="profil__date">.{{ formatDate(publication.createdAt) }}</span>
+            </div>
             <div class="publication__options" v-if="access(publication.userId)">
               <button @click="showEdit(publication.id, publication.message, publication.attachement, index)">
                 <img src="../assets/icons/edit-solid.svg">
@@ -43,10 +46,10 @@
           </div>
           <div class="content">
             <a :href="'publication/' + publication.id">
-              <p class="content__message">
+              <p class="content__message" v-if="publication.message" >
                 {{ publication.message }}
               </p>
-              <img v-if="publication.attachement" class="content__attachement" :src="publication.attachement">
+              <img class="content__attachement" v-if="publication.attachement" :src="publication.attachement">
             </a>
             <div class="content__footer">
               <div class="like">
@@ -75,14 +78,24 @@
         <div class="onTop__content">
           <div class="best">
             <span>Meilleure publication</span>
-            <div class="best__detail">
-              {{ topPublicationId }}
-            </div>
+            <a class="best__detail" :href="'publication/' + topPublication.id">
+              <img class="best__avatar" :src="topPublication.avatar">
+              <div class="best__message"> 
+                {{ topPublication.message }}
+              </div>
+            </a>
           </div>
           <div class="horizontal_line"></div>
           <div class="best">
-            <span>Contributeur au <img src="../assets/icons/hand-point-up-solid.svg"></span>
-            <div class="best__detail"></div>
+            <span>Contributeur au
+              <img class="best__logo" src="../assets/icons/hand-point-up-solid.svg">
+            </span>
+            <a class="best__detail" :href="'profil/' + topContributor.id">
+              <img class="best__avatar" :src="topContributor.avatar">
+              <div class="best__message"> 
+                {{ topContributor.name }}
+              </div>
+            </a>
           </div>
         </div>
       </div>
@@ -110,7 +123,8 @@ export default {
       publications: [],
       publicationEdit: '',
       publicationDelete: '',
-      topPublicationId: null,
+      topPublication: '',
+      topContributor: '',
       connected: false,
       userAvatar: null,
       deleted: false,
@@ -129,12 +143,36 @@ export default {
           this.publications = response.data
           let bestPublication = []
           let countlikes = []
+          let contributorsId = []
+          let contributors = []
           this.publications.forEach(publication => {
             bestPublication.push(publication.id)
+            contributorsId.push(publication.userId)
             countlikes.push(publication.like)
+            const data = {
+              id: publication.userId,
+              name: publication.publishedBy,
+              avatar: publication.avatar
+            }
+            contributors.push(data)
           });
           const indexOfMaxValue = countlikes.indexOf(Math.max(...countlikes));
-          this.topPublicationId = bestPublication[indexOfMaxValue]
+          this.topPublication = this.publications[indexOfMaxValue]
+
+          let occurrences = contributorsId.reduce(function(obj, item) {
+            obj[item] = (obj[item] || 0) + 1;
+            return obj;
+          }, {});
+          let nbOfContribution = 0
+          let contributorId = ''
+          for (const property in occurrences) {
+            if (`${occurrences[property]}` > nbOfContribution) {
+              nbOfContribution = `${occurrences[property]}`
+              contributorId = `${property}`
+            }
+          }
+          const resultat = contributors.find(contributor => contributor.id == contributorId);
+          this.topContributor = resultat
         })
         .catch(e => {
           console.log(e);
@@ -185,9 +223,11 @@ export default {
     addPublication(data) {
       this.publications.unshift(data)
     },
-    editPublication(data) { // A finir car problème de mutation (voir computed)
-      console.log(data)
-      console.log(this.publicationEdit)
+    editPublication(data) {
+      this.publications[this.publicationEdit.index].message = data.message
+      if (data.attachement) {
+        this.publications[this.publicationEdit.index].attachement = data.attachement
+      }
     },
     deletePublication() {
       this.publications.splice(this.publicationDelete.index, 1)
@@ -253,14 +293,15 @@ export default {
     padding: 10px;
     margin-bottom: 20px;
     background: #909090;
-    border-radius: 16px;
+    border-radius: 15px;
   }
   &__head {
     display: flex;
     justify-content: space-between;
+    margin-bottom: 15px;
   }
   &__options {
-    width: 20%;
+    width: 15%;
     display: flex;
     justify-content: space-between;
     & button {
@@ -268,14 +309,19 @@ export default {
       background: #909090;
       border: none;
       & img {
-        height: 30px;
+        height: 20px;
       }
     }
   }
 }
-.profil  {
+.profil {
   display: flex;
   align-items: center;
+  &__link { 
+    display: flex;
+    align-items: center;
+    color: white;
+  }
   &__avatar {
     object-fit: cover;
     border-radius: 30px;
@@ -283,13 +329,24 @@ export default {
     width: 50px;
     height: 50px;
     margin-right: 20px;
+    color: black;
+  }
+  &__date {
+    color: white;
+    font-size: 19px;
+    margin-top: 9px;
   }
 }
+
 .content {
-  margin: 0px 15px;
+  padding: 1%;
+  background-color: white;
+  border-radius: 0px 0px 10px 10px;
   &__message {
     margin: 10px 0px 20px;
-    color: white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   &__attachement {
     width: 100%;
@@ -297,13 +354,14 @@ export default {
     object-fit: cover;
   }
   &__footer {
-    font-size: 25px;
+    font-size: 28px;
     display: flex;
     margin: 5px 0px;
+    color: #909090;
     justify-content: space-between;
     & div {
       display: flex;
-      color: white;
+      align-items: center;
     }
     & img {
       width: 35px;
@@ -318,7 +376,7 @@ export default {
   & button {
     cursor: pointer;
     border: none;
-    background-color: #909090;
+    background-color: white;
   }
 }
 a {
@@ -328,34 +386,57 @@ a {
 }
 .onTop {
   position: fixed;
-  right: 15%;
+  right: 10%;
   top: 48%;
-  width: 296px;
-  border: 2px solid white;
+  width: 346px;
+  border: 2px solid #909090;
+  background-color: white;
   &__content {
     font-family: "Roboto-Regular";
     font-size: 28px;
     margin: 10px 0px;
     color: #ff7c03;
     text-align: center;
-    display: grid;
+    display: flex;
+    flex-direction: column;
   }
 }
 .best {
   margin: 10px;
-  & img {
-    width: 25px;
-  }
   &__detail {
+    padding: 0;
     width: 100%;
+    border: none;
+    cursor: pointer;
     height: 60px;
     margin-top: 10px;
-    background-color: white;
+    display: flex;
+    align-items: center;
+    background-color: #ff7c03;
+  }
+  &__avatar {
+    padding: 2%;
+    margin-right: 5px;
+    object-fit: cover;
+    border-radius: 30px;
+    width: 50px;
+    height: 50px;
+  }
+  &__message {
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: white;
+  }
+  &__logo {
+    width: 25px;
   }
 }
 .horizontal_line {
   margin: 10px;
-  background-color: white;
+  background-color: #909090;
   height: 1px;
 }
 </style>
