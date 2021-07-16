@@ -1,6 +1,10 @@
 <template>
   <main>
-    <Delete msg="profil" v-on:closingPopupDelete="close($event)" v-if="showDelete"/>
+    <Delete
+      v-if="showDelete"
+      msg="profil"
+      v-on:closing-popup-delete="close($event)"
+    />
     <div v-if="!editProfil" class="profil">
       <div class="profil__wrap">
         <div>
@@ -111,7 +115,7 @@ export default {
       UserDataService.create(data)
         .then(response => {
           if (response) {
-            this.$emit('closingPopupDelete', false)
+            this.$emit('closing-popup-delete', false)
           }
         })
         .catch(e => {
@@ -251,10 +255,11 @@ a {
 }
 aside {
   position: fixed;
-  right: 15%;
+  right: 10%;
   top: 50%;
   font-weight: 400;
   & button {
+    width: 350px;
     cursor: pointer;
     padding: 20px 24px;
     background-color: #C71010;
