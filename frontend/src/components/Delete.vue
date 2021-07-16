@@ -9,7 +9,7 @@
           <button @click="close()">
             <img src="../assets/icons/times-solid-red.svg">
           </button>
-          <button @click="deleted(msg)">
+          <button @click="deleted(message)">
             <img src="../assets/icons/check-solid.svg">
           </button>
         </div>

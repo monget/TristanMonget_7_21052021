@@ -1,14 +1,16 @@
 <template>
   <div>
     <footer>
-      <nav>
-        <ul>
-          <li><a href="#">Conditions générales</a></li>
-          <li><a href="#">Confidentialité</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-      </nav>
-      <nav class="copyright">© Groupomania 2021</nav>
+      <div>
+        <nav>
+          <ul>
+            <li><a href="#">Conditions générales</a></li>
+            <li><a href="#">Confidentialité</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </nav>
+        <nav class="copyright">© Groupomania 2021</nav>
+      </div>
     </footer>
   </div>
 </template>
@@ -25,13 +27,20 @@ footer {
   flex-direction: column;
   justify-content: space-between;
   position: fixed;
-  height: 200px;
-  right: 15%;
+  width: 350px;
+  height: 250px;
+  right: 10%;
   top: 15%;
   font-weight: 400;
   font-size: 20px;
-  padding: 20px 80px 20px 30px;
   background-color: white;
+  & div {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    justify-content: space-between;
+    height: 100%;
+  }
   & ul {
     margin: 0px;
     padding-left: 0px;
