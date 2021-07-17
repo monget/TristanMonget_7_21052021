@@ -5,10 +5,10 @@
         <div class="publication__wrap">
           <div class="publication__head">
             <div class="profil">
-              <a class="profil__link" :href="'../profil/' + publication.userId">
+              <router-link class="profil__link" :to="'../profil/' + publication.userId">
                 <img class="profil__avatar" :src="publication.avatar" :title="publication.publishedBy">
                 <span>{{ publication.publishedBy }}</span>
-              </a>
+              </router-link>
               <span class="profil__date">.{{ formatDate(createdAt) }}</span>
             </div>
             <button class="publication__close" @click="close()">
@@ -38,6 +38,10 @@
             </div>
           </div>
         </div>
+        <Comments
+          v-if="publication.comments"
+          :comments="publication.comments"
+        />
       </div>
     </div>
   </main>
@@ -45,11 +49,15 @@
 
 <script>
 import PublicationDataService from "../services/PublicationDataService";
+import Comments from '@/components/Comments.vue'
 import { formatDistance, subDays } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 export default {
   name: 'Publication',
+  components: {
+    Comments
+  },
   data() {
     return {
       publication: [],
@@ -131,7 +139,6 @@ export default {
   width: 55%;
   &__wrap {
     padding: 10px;
-    margin-bottom: 20px;
     background: #909090;
     border-radius: 16px;
   }
