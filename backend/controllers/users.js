@@ -64,29 +64,16 @@ exports.login = (req, res, next) => {
 exports.getUser = (req, res, next) => {
   User.findByPk(req.params.id)
     .then(users => {
-      if (users.dataValues.id === userId(req)) {
-        const user = {
-          id: users.dataValues.id,
-          pseudo: users.dataValues.pseudo,
-          password: users.dataValues.password,
-          email: users.dataValues.email,
-          avatar: users.dataValues.attachement,
-          createdAt: users.dataValues.createdAt,
-          updatedAt: users.dataValues.updatedAt
-        }
-        res.status(200).json(user)
-      }
-      else {
         const user = {
           id: users.dataValues.id,
           pseudo: users.dataValues.pseudo,
           email: users.dataValues.email,
           avatar: users.dataValues.attachement,
+          birthday: users.dataValues.birthday,
           createdAt: users.dataValues.createdAt,
           updatedAt: users.dataValues.updatedAt
         }
         res.status(200).json(user)
-      }
     })
     .catch(err => res.status(500).send({ message: err.message }));
 };
@@ -95,9 +82,8 @@ exports.editProfil = (req, res, next) => {
   const userObject = req.file ?
   {
     ...req.body,
-    attachement: `${req.protocol}://${req.get('host')}/images/users/${req.file.filename}`,
-    password: bcrypt.hashSync(req.body.password, 10)
-  } : { ...req.body, password: bcrypt.hashSync(req.body.password, 10) }
+    attachement: `${req.protocol}://${req.get('host')}/images/users/${req.file.filename}`
+  } : { ...req.body }
   User.findByPk(req.params.id)
     .then(user => {
       if (user.id == userId(req)) {
@@ -110,7 +96,7 @@ exports.editProfil = (req, res, next) => {
 					}
 				}
         User.update( userObject, { where: { id: req.params.id }})
-          .then(() => res.status(200).json({ message: 'Profil modifié !'}))
+          .then(() => res.status(200).json( userObject ))
           .catch(err => res.status(500).send({ message: err.message }));
       }
       else {
