@@ -29,10 +29,10 @@
         <div class="publication__wrap" v-for="(publication, index) in publications" :key="index">
           <div class="publication__head">
             <div class="profil">
-              <a class="profil__link" :href="'profil/' + publication.userId">
+              <router-link class="profil__link" :to="'profil/' + publication.userId">
                 <img class="profil__avatar" :src="publication.avatar" :title="publication.publishedBy">
                 <span>{{ publication.publishedBy }}</span>
-              </a>
+              </router-link>
               <span class="profil__date">.{{ formatDate(publication.createdAt) }}</span>
             </div>
             <div class="publication__options" v-if="access(publication.userId)">
@@ -45,12 +45,12 @@
             </div>
           </div>
           <div class="content">
-            <a :href="'publication/' + publication.id">
+            <router-link :to="'publication/' + publication.id">
               <p class="content__message" v-if="publication.message" >
                 {{ publication.message }}
               </p>
               <img class="content__attachement" v-if="publication.attachement" :src="publication.attachement">
-            </a>
+            </router-link>
             <div class="content__footer">
               <div class="like">
                 <div>
@@ -78,24 +78,24 @@
         <div class="onTop__content">
           <div class="best">
             <span>Meilleure publication</span>
-            <a class="best__detail" :href="'publication/' + topPublication.id">
+            <router-link class="best__detail" :to="'publication/' + topPublication.id">
               <img class="best__avatar" :src="topPublication.avatar">
               <div class="best__message"> 
                 {{ topPublication.message }}
               </div>
-            </a>
+            </router-link>
           </div>
           <div class="horizontal_line"></div>
           <div class="best">
             <span>Contributeur au
               <img class="best__logo" src="../assets/icons/hand-point-up-solid.svg">
             </span>
-            <a class="best__detail" :href="'profil/' + topContributor.id">
+            <router-link class="best__detail" :to="'profil/' + topContributor.id">
               <img class="best__avatar" :src="topContributor.avatar">
               <div class="best__message"> 
                 {{ topContributor.name }}
               </div>
-            </a>
+            </router-link>
           </div>
         </div>
       </div>
@@ -337,7 +337,6 @@ export default {
     margin-top: 9px;
   }
 }
-
 .content {
   padding: 1%;
   background-color: white;
@@ -352,6 +351,9 @@ export default {
     width: 100%;
     height: 400px;
     object-fit: cover;
+    &:hover {
+      height: initial;
+    }
   }
   &__footer {
     font-size: 28px;
