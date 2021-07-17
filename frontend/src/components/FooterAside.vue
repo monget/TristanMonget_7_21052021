@@ -4,9 +4,9 @@
       <div>
         <nav>
           <ul>
-            <li><a href="#">Conditions générales</a></li>
-            <li><a href="#">Confidentialité</a></li>
-            <li><a href="#">Contact</a></li>
+            <li><router-link to="#">Conditions générales</router-link></li>
+            <li><router-link to="#">Confidentialité</router-link></li>
+            <li><router-link to="#">Contact</router-link></li>
           </ul>
         </nav>
         <nav class="copyright">© Groupomania 2021</nav>
