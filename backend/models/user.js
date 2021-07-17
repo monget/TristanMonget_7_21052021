@@ -11,6 +11,9 @@ module.exports = (sequelize, Sequelize) => {
       },
       attachement: {
         type: Sequelize.STRING
+      },
+      birthday: {
+        type: Sequelize.DATE
       }
     });
   
