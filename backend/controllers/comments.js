@@ -9,14 +9,10 @@ exports.create = (req, res, next) => {
 	{
 		...req.body,
 		attachement: `${req.protocol}://${req.get('host')}/images/comments/${req.file.filename}`,
-		like: 0,
-		dislike: 0,
 		publicationId: req.body.publicationId,
 		userId: userId(req)
 	} : { 
 		...req.body,
-		like: 0,
-		dislike: 0,
 		publicationId: req.body.publicationId,
 		userId: userId(req)
 	}
