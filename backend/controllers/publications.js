@@ -12,13 +12,9 @@ exports.create = (req, res, next) => {
 	{
 		...req.body,
 		attachement: `${req.protocol}://${req.get('host')}/images/publications/${req.file.filename}`,
-		like: 0,
-		dislike: 0,
 		userId: userId(req)
 	} : { 
 		...req.body,
-		like: 0,
-		dislike: 0,
 		userId: userId(req)
 	}
 	Publication.create(publicationObject)
@@ -34,6 +30,10 @@ exports.create = (req, res, next) => {
 						attachement: publication.dataValues.attachement,
 						like: publication.dataValues.like,
 						dislike: publication.dataValues.dislike,
+						stateLike: {
+							disliked: false,
+							liked: false
+						},
 						createdAt: publication.dataValues.createdAt,
 						updatedAt: publication.dataValues.updatedAt,
 						userId: publication.dataValues.userId,
@@ -41,7 +41,7 @@ exports.create = (req, res, next) => {
 						avatar: creatorPublication.dataValues.attachement,
 						totalComments: 0,
 					}
-					res.status(200).json(newPublication)
+					res.status(201).json(newPublication)
 				})
 				.catch(err =>	res.status(400).send({ message: err.message }));
 		})
@@ -93,74 +93,91 @@ exports.delete = (req, res, next) => {
 		.catch(error => res.status(400).json({ error }));
 };
 
-exports.findOne = (req, res, next) => { // voir avec le token.id pour récupérer l'état des likes/dislike du user
+exports.findOne = (req, res, next) => {
   Publication.findByPk(req.params.id, {
 		attributes: {
 			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "TotalComments"]]
 		},
-		include: [{	model: Comment, attributes: [] }, { model: User, attributes: ['pseudo', 'attachement'] }
+		include: [
+			{	model: Comment, attributes: [] },
+			{ model: User, attributes: ['pseudo', 'attachement'] },
 		],
     group: ['Publications.id'],
 	})
 		.then(publication => {
-				let creatorPublication = publication.dataValues.user;
-				if (publication.dataValues.TotalComments === 0) {
-					const publicationWithoutComment = {
-						id: publication.dataValues.id,
-						message: publication.dataValues.message,
-						attachement: publication.dataValues.attachement,
-						like: publication.dataValues.like,
-						dislike: publication.dataValues.dislike,
-						createdAt: publication.dataValues.createdAt,
-						updatedAt: publication.dataValues.updatedAt,
-						userId: publication.dataValues.userId,
-						publishedBy: creatorPublication.dataValues.pseudo,
-						avatar: creatorPublication.dataValues.attachement,
-						totalComments: publication.dataValues.TotalComments,
+			Like.findOne({ where: { publicationId: req.params.id, userId: userId(req) } })
+				.then(like => {
+					const stateLike = {}
+					if (like != null) {
+						stateLike.liked = like.dataValues.usersLiked,
+						stateLike.disliked = like.dataValues.usersDisliked
 					}
-					res.status(200).json(publicationWithoutComment)
-				}
-				else {
-					Comment.findAll({ where: { publicationId: publication.dataValues.id } })
-						.then(comments => {
-							let arrayComments = [];
-							comments.forEach(comment => {
-								User.findByPk(comment.dataValues.userId)
-									.then(user => {
-										let objectComments = {
-											id: comment.dataValues.id,
-											message: comment.dataValues.message,
-											attachement: comment.dataValues.attachement,
-											like: comment.dataValues.like,
-											dislike: comment.dataValues.dislike,
-											createdAt: comment.dataValues.createdAt,
-											userId: comment.dataValues.userId,
-											commentedBy: user.dataValues.pseudo,
-											avatar: user.dataValues.attachement
-										}
-										arrayComments.push(objectComments);
-										
-										if (comments.length === arrayComments.length) {										
-											let objectPublication = {
-												id: publication.dataValues.id,
-												message: publication.dataValues.message,
-												attachement: publication.dataValues.attachement,
-												like: publication.dataValues.like,
-												dislike: publication.dataValues.dislike,
-												createdAt: publication.dataValues.createdAt,
-												updatedAt: publication.dataValues.updatedAt,
-												userId: publication.dataValues.userId,
-												publishedBy: creatorPublication.dataValues.pseudo,
-												avatar: creatorPublication.dataValues.attachement,
-												totalComments: publication.dataValues.TotalComments,
-												comments: arrayComments
+					else {
+						stateLike.liked = false
+						stateLike.disliked = false
+					}
+					let creatorPublication = publication.dataValues.user;
+					if (publication.dataValues.TotalComments === 0) {
+						const publicationWithoutComment = {
+							id: publication.dataValues.id,
+							message: publication.dataValues.message,
+							attachement: publication.dataValues.attachement,
+							like: publication.dataValues.like,
+							dislike: publication.dataValues.dislike,
+							stateLike: stateLike,
+							createdAt: publication.dataValues.createdAt,
+							updatedAt: publication.dataValues.updatedAt,
+							userId: publication.dataValues.userId,
+							publishedBy: creatorPublication.dataValues.pseudo,
+							avatar: creatorPublication.dataValues.attachement,
+							totalComments: publication.dataValues.TotalComments,
+						}
+						res.status(200).json(publicationWithoutComment)
+					}
+					else {
+						Comment.findAll({ where: { publicationId: publication.dataValues.id } })
+							.then(comments => {
+								let arrayComments = [];
+								comments.forEach(comment => {
+									User.findByPk(comment.dataValues.userId)
+										.then(user => {
+											let objectComments = {
+												id: comment.dataValues.id,
+												message: comment.dataValues.message,
+												attachement: comment.dataValues.attachement,
+												like: comment.dataValues.like,
+												dislike: comment.dataValues.dislike,
+												createdAt: comment.dataValues.createdAt,
+												userId: comment.dataValues.userId,
+												commentedBy: user.dataValues.pseudo,
+												avatar: user.dataValues.attachement
 											}
-											res.status(200).json(objectPublication)
-										}
-									})	
+											arrayComments.push(objectComments);
+											
+											if (comments.length === arrayComments.length) {										
+												let objectPublication = {
+													id: publication.dataValues.id,
+													message: publication.dataValues.message,
+													attachement: publication.dataValues.attachement,
+													like: publication.dataValues.like,
+													dislike: publication.dataValues.dislike,
+													stateLike: stateLike,
+													createdAt: publication.dataValues.createdAt,
+													updatedAt: publication.dataValues.updatedAt,
+													userId: publication.dataValues.userId,
+													publishedBy: creatorPublication.dataValues.pseudo,
+													avatar: creatorPublication.dataValues.attachement,
+													totalComments: publication.dataValues.TotalComments,
+													comments: arrayComments
+												}
+												res.status(200).json(objectPublication)
+											}
+										})	
+								})
 							})
-						})
-				}
+					}
+				})
+				.catch(err =>	res.status(400).send({ message: err.message }));
 		})
 		.catch(err =>	res.status(400).send({ message: err.message }));
 };
@@ -174,73 +191,90 @@ exports.findAll = (req, res, next) => {
 		attributes: {
 			include: [[Sequelize.fn("COUNT", Sequelize.col("Comments.publicationId")), "TotalComments"]]
 		},
-		include: [{	model: Comment, attributes: [] }, { model: User, attributes: ['pseudo', 'attachement'] }
+		include: [
+			{	model: Comment, attributes: [] },
+			{ model: User, attributes: ['pseudo', 'attachement'] }
 		],
     group: ['Publications.id'],
 	})
 		.then(publications => {
 			let arrayPublications = [];
 			publications.forEach(publication => {
-				let creatorPublication = publication.dataValues.user;
-				if (publication.dataValues.TotalComments === 0) {
-					const publicationWithoutComment = {
-						id: publication.dataValues.id,
-						message: publication.dataValues.message,
-						attachement: publication.dataValues.attachement,
-						like: publication.dataValues.like,
-						dislike: publication.dataValues.dislike,
-						createdAt: publication.dataValues.createdAt,
-						updatedAt: publication.dataValues.updatedAt,
-						userId: publication.dataValues.userId,
-						publishedBy: creatorPublication.dataValues.pseudo,
-						avatar: creatorPublication.dataValues.attachement,
-						totalComments: publication.dataValues.TotalComments,
-					}
-					arrayPublications.push(publicationWithoutComment)
-				}
-				Comment.findAll({ where: { publicationId: publication.dataValues.id } })
-					.then(comments => {
-						let arrayComments = [];
-						comments.forEach(comment => {
-							User.findByPk(comment.dataValues.userId)
-								.then(user => {
-									let objectComments = {
-										id: comment.dataValues.id,
-										message: comment.dataValues.message,
-										attachement: comment.dataValues.attachement,
-										like: comment.dataValues.like,
-										dislike: comment.dataValues.dislike,
-										createdAt: comment.dataValues.createdAt,
-										userId: comment.dataValues.userId,
-										commentedBy: user.dataValues.pseudo,
-										avatar: user.dataValues.attachement
-									}
-									arrayComments.push(objectComments);
-									
-									if (comments.length === arrayComments.length) {										
-										let objectPublication = {
-											id: publication.dataValues.id,
-											message: publication.dataValues.message,
-											attachement: publication.dataValues.attachement,
-											like: publication.dataValues.like,
-											dislike: publication.dataValues.dislike,
-											createdAt: publication.dataValues.createdAt,
-											updatedAt: publication.dataValues.updatedAt,
-											userId: publication.dataValues.userId,
-											publishedBy: creatorPublication.dataValues.pseudo,
-											avatar: creatorPublication.dataValues.attachement,
-											totalComments: publication.dataValues.TotalComments,
-											comments: arrayComments
-										}
-										arrayPublications.push(objectPublication)
-										if (publications.length === arrayPublications.length) {
-											res.status(200).json(arrayPublications)
-										}
-									}
-								})	
-						})
+				Like.findOne({ where: { publicationId: publication.dataValues.id, userId: userId(req) } })
+					.then(like => {
+						const stateLike = {}
+						if (like != null) {
+							stateLike.liked = like.dataValues.usersLiked,
+							stateLike.disliked = like.dataValues.usersDisliked
+						}
+						else {
+							stateLike.liked = false
+							stateLike.disliked = false
+						}
+						let creatorPublication = publication.dataValues.user;
+						if (publication.dataValues.TotalComments === 0) {
+							const publicationWithoutComment = {
+								id: publication.dataValues.id,
+								message: publication.dataValues.message,
+								attachement: publication.dataValues.attachement,
+								like: publication.dataValues.like,
+								dislike: publication.dataValues.dislike,
+								stateLike: stateLike,
+								createdAt: publication.dataValues.createdAt,
+								updatedAt: publication.dataValues.updatedAt,
+								userId: publication.dataValues.userId,
+								publishedBy: creatorPublication.dataValues.pseudo,
+								avatar: creatorPublication.dataValues.attachement,
+								totalComments: publication.dataValues.TotalComments,
+							}
+							arrayPublications.push(publicationWithoutComment)
+						}
+						Comment.findAll({ where: { publicationId: publication.dataValues.id } })
+							.then(comments => {
+								let arrayComments = [];
+								comments.forEach(comment => {
+									User.findByPk(comment.dataValues.userId)
+										.then(user => {
+											let objectComments = {
+												id: comment.dataValues.id,
+												message: comment.dataValues.message,
+												attachement: comment.dataValues.attachement,
+												like: comment.dataValues.like,
+												dislike: comment.dataValues.dislike,
+												createdAt: comment.dataValues.createdAt,
+												userId: comment.dataValues.userId,
+												commentedBy: user.dataValues.pseudo,
+												avatar: user.dataValues.attachement
+											}
+											arrayComments.push(objectComments);
+											
+											if (comments.length === arrayComments.length) {										
+												let objectPublication = {
+													id: publication.dataValues.id,
+													message: publication.dataValues.message,
+													attachement: publication.dataValues.attachement,
+													like: publication.dataValues.like,
+													dislike: publication.dataValues.dislike,
+													stateLike: stateLike,
+													createdAt: publication.dataValues.createdAt,
+													updatedAt: publication.dataValues.updatedAt,
+													userId: publication.dataValues.userId,
+													publishedBy: creatorPublication.dataValues.pseudo,
+													avatar: creatorPublication.dataValues.attachement,
+													totalComments: publication.dataValues.TotalComments,
+													comments: arrayComments
+												}
+												arrayPublications.push(objectPublication)
+												if (publications.length === arrayPublications.length) {
+													res.status(200).json(arrayPublications)
+												}
+											}
+										})	
+								})
+							})
 					})
-			})
+					.catch(err =>	res.status(400).send({ message: err.message }));
+			})	
 		})
 		.catch(err =>	res.status(400).send({ message: err.message }));
 };
