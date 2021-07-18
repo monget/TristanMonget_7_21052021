@@ -54,14 +54,16 @@
             <div class="content__footer">
               <div class="like">
                 <div>
-                  <button @click="liked(publication.id, index)">
-                    <img src="../assets/icons/thumbs-up-regular.svg">
+                  <button @click="liked(publication.id, index, publication.stateLike)">
+                    <img v-if="publication.stateLike.liked" src="../assets/icons/thumbs-up-regular-green.svg">
+                    <img v-else src="../assets/icons/thumbs-up-regular.svg">
                   </button>
                   {{ publication.like }}
                 </div>
                 <div>
-                  <button @click="disliked(publication.id, index)">
-                    <img src="../assets/icons/thumbs-down-regular.svg">
+                  <button @click="disliked(publication.id, index, publication.stateLike)">
+                    <img v-if="publication.stateLike.disliked" src="../assets/icons/thumbs-down-regular-red.svg">
+                    <img v-else src="../assets/icons/thumbs-down-regular.svg">
                   </button>
                   {{ publication.dislike }}
                 </div>
@@ -195,30 +197,95 @@ export default {
       }
       return false
     },
-    liked(id, index) {
-      const data = {
-        like: 1
+    liked(id, index, state) {
+      if (state.liked == false && state.disliked == false) {
+        const data = { like: 1 }
+        PublicationDataService.like(id, data)
+          .then(
+            this.publications[index].like += 1,
+            this.publications[index].stateLike = {
+              disliked: false,
+              liked: true
+            },
+          )
+          .catch(e => {
+            console.log(e.response.data);
+          });
       }
-      PublicationDataService.like(id, data)
-        .then(
-          this.publications[index].like += 1
-        )
-        .catch(e => {
-          console.log(e.response.data);
-        });
+      else if (state.liked == true && state.disliked == false) {
+        const data = { like: 0 }
+        PublicationDataService.like(id, data)
+          .then(
+            this.publications[index].like -= 1,
+            this.publications[index].stateLike = {
+              disliked: false,
+              liked: false
+            }
+          )
+          .catch(e => {
+            console.log(e.response.data);
+          });
+      }
+      else if (state.liked == false && state.disliked == true) {
+        const data = { like: 1 }
+        PublicationDataService.like(id, data)
+          .then(
+            this.publications[index].like += 1,
+            this.publications[index].dislike += 1,
+            this.publications[index].stateLike = {
+              disliked: false,
+              liked: true
+            }
+          )
+          .catch(e => {
+            console.log(e.response.data);
+          });
+      }
     },
-    disliked(id, index) {
-      const data = {
-        like: -1
+    disliked(id, index, state) {
+      if (state.liked == false && state.disliked == false) {
+        const data = { like: -1 }
+        PublicationDataService.like(id, data)
+          .then(
+            this.publications[index].dislike -= 1,
+            this.publications[index].stateLike = {
+              disliked: true,
+              liked: false
+            },
+          )
+          .catch(e => {
+            console.log(e.response.data);
+          });
       }
-      PublicationDataService.like(id, data)
-        .then(response => {
-          this.publications[index].dislike -= 1
-          console.log(response)       
-        })
-        .catch(e => {
-          console.log(e.response);
-        });
+      else if (state.disliked == true && state.liked == false) {
+        const data = { like: 0 }
+        PublicationDataService.like(id, data)
+          .then(
+            this.publications[index].dislike += 1,
+            this.publications[index].stateLike = {
+              disliked: false,
+              liked: false
+            }
+          )
+          .catch(e => {
+            console.log(e.response.data);
+          });
+      }
+      else if (state.disliked == false && state.liked == true) {
+        const data = { like: -1 }
+        PublicationDataService.like(id, data)
+          .then(
+            this.publications[index].like -= 1,
+            this.publications[index].dislike -= 1,
+            this.publications[index].stateLike = {
+              disliked: true,
+              liked: false
+            }
+          )
+          .catch(e => {
+            console.log(e.response.data);
+          });
+      }
     },
     addPublication(data) {
       this.publications.unshift(data)
