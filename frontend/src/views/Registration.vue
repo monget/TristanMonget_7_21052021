@@ -7,25 +7,25 @@
           <ValidationProvider vid="user" name="pseudo" rules="required:@pseudo|min:3|max:12" v-slot="{ errors }">
             <label class="label" for="pseudo">Pseudo :</label>
             <input id="pseudo" class="input" type="text" name="pseudo" minlength="3" maxlength="12" placeholder="De 3 à 12 caractères" v-model.trim="pseudo"/>
-            <span>{{ errors[0] }}</span>
+            <span class="error">{{ errors[0] }}</span>
           </ValidationProvider>
 
           <ValidationProvider name="mot de passe" rules="required:@mot de passe|min:8|regex" v-slot="{ errors }">
             <label class="label" for="password">Mot de passe :</label>
             <input class="input" type="password" id="password" name="password" minlength="8" placeholder="Au moins 8 caractères" v-model="password"/>
-            <span>{{ errors[0] }}</span>
+            <span class="error">{{ errors[0] }}</span>
           </ValidationProvider>
 
           <ValidationProvider name="ConfirmPassword" rules="ifexist:@mot de passe|requiredConfirmPassword|confirm_password:@mot de passe"  v-slot="{ errors }">
             <label class="label" for="confirm_password">Confirmez le mot de passe :</label>
             <input class="input" type="password" id="confirm_password" name="confirm_password"  v-model="confirm_password"/>
-            <span>{{ errors[0] }}</span>
+            <span class="error">{{ errors[0] }}</span>
           </ValidationProvider>
 
           <ValidationProvider vid="email" name="email" rules="required:@email|email" v-slot="{ errors }">
             <label class="label" for="email">Adresse email :</label>
             <input class="input" type="email" id="email" name="email" v-model="email"/>
-            <span>{{ errors[0] }}</span>
+            <span class="error">{{ errors[0] }}</span>
           </ValidationProvider>
 
           <button class="submitForm">Valider</button>
@@ -37,8 +37,6 @@
 </template>
 
 <script>
-import UserDataService from "../services/UserDataService";
-
 export default {
   name: "Registration",
   data() {
@@ -49,19 +47,27 @@ export default {
       email: ""
     }
   },
+  computed: {
+    loggedIn() {
+      return this.$store.state.auth.status.loggedIn;
+    }
+  },
+  created() {
+    if (this.loggedIn) {
+      this.$router.push('/publications');
+    }
+  },
   methods: {
     createUser() {
-      const data =  {
+      const data = {
         pseudo: this.pseudo,
         password: this.password,
         email: this.email
-      }
-      UserDataService.signup(data)
-        .then(response => {
-          if (response.data.token) {
-          localStorage.setItem('user', JSON.stringify(response.data));
-          this.$router.push('/');
-        }})
+      };
+      this.$store.dispatch('auth/signup', data)
+        .then(() => {
+          this.$router.push('/publications')
+        })
         .catch(e => {
           this.$refs.form.setErrors(e.response.data)
         });
@@ -121,6 +127,9 @@ h1 {
   display: block;
   padding: 5px;
   box-sizing: border-box;
+}
+.error {
+  color: red;
 }
 .submitForm {
   font-size: 20px;
