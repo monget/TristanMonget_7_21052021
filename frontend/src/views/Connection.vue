@@ -6,13 +6,13 @@
           <p>
             <ValidationProvider vid="pseudo" name="pseudo" rules="required:@pseudo" v-slot="{ errors }">
               <label class="label" for="pseudo">Pseudo :</label>
-              <input class="input" type="text" id="pseudo" name="pseudo" v-model.trim="user.pseudo"/>
+              <input class="input" type="text" id="pseudo" name="pseudo" v-model.trim="pseudo"/>
               <span>{{ errors[0] }}</span>
             </ValidationProvider>
 
             <ValidationProvider ref="error" vid="mot de passe" name="mot de passe" rules="required:@mot de passe" v-slot="{ errors }">
               <label class="label" for="mot de passe">Mot de passe :</label>
-              <input class="input" type="password" id="mot de passe" name="mot de passe" v-model="user.password"/>
+              <input class="input" type="password" id="mot de passe" name="mot de passe" v-model="password"/>
               <span>{{ errors[0] }}</span>
             </ValidationProvider>
 
@@ -25,30 +25,34 @@
 </template>
 
 <script>
-import UserDataService from "../services/UserDataService";
-
 export default {
   name: "Connection",
   data() {
     return {
-      user: {
-        pseudo: "",
-        password: "",
-      },
+      pseudo: "",
+      password: ""
     };
+  },
+  computed: {
+    loggedIn() {
+      return this.$store.state.auth.status.loggedIn;
+    }
+  },
+  created() {
+    if (this.loggedIn) {
+      this.$router.push('/publications');
+    }
   },
   methods: {
     logUser() {
       const data = {
-        pseudo: this.user.pseudo,
-        password: this.user.password
+        pseudo: this.pseudo,
+        password: this.password
       };
-      UserDataService.login(data)
-        .then(response => {
-          if (response.data.token) {
-          localStorage.setItem('user', JSON.stringify(response.data));
-          this.$router.push('/');
-        }})
+      this.$store.dispatch('auth/login', data)
+        .then(() => {
+          this.$router.push('/publications')
+        })
         .catch(e => {
           this.$refs.error.setErrors([e.response.data.message])
         });
