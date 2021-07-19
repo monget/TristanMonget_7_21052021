@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Header button="Inscription"/>
+    <Header/>
     <router-view/>
     <FooterAside/>
   </div>

@@ -2,17 +2,18 @@
   <div>
     <head class="head">
       <div class="logo">
-        <router-link to="/">
+        <router-link to="/publications">
           <img alt="Groupomania logo" src="../assets/icon-left-font-monochrome-black.svg">
         </router-link>
       </div>
-      <div class="buttons"> <!-- v-if="connection == false" -->
-        <router-link to="/registration">{{ button }}</router-link>
+      <div class="buttons" v-if="logged">
+        <router-link :to="'/profil/' + userId()">Profil</router-link>
+        <a href @click="logOut">Déconnection</a>
+      </div>
+      <div class="buttons" v-else>
+        <router-link to="/registration">Inscription</router-link>
         <router-link to="/connection">Connection</router-link>
       </div>
-      <!--<div v-else @click.prevent="logOut" class="buttons">
-        <router-link to="/connection">Déconnection</router-link>
-      </div> -->
     </head>
   </div>
 </template>
@@ -20,8 +21,24 @@
 <script>
 export default {
   name: 'Header',
-  props: {
-    button: String
+  computed: {
+    logged() {
+      if (this.$store.state.auth.status.loggedIn) {
+        return true
+      }
+      return false
+    }
+  },
+  methods: {
+    logOut() {
+      this.$store.dispatch('auth/logout');
+      this.$router.push('/connection');
+    },
+    userId() {
+      if (this.$store.state.auth.user.Id) {
+        return this.$store.state.auth.user.Id
+      }
+    }
   }
 }
 </script>
