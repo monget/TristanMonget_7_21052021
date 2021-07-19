@@ -1,10 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
-import Registration from '../views/Registration.vue'
-import Connection from '../views/Connection.vue'
-import Publication from '../views/Publication.vue'
-import Profil from '../views/Profil.vue'
 
 Vue.use(VueRouter)
 
@@ -17,30 +13,32 @@ const routes = [
   {
     path: '/registration',
     name: 'Registration',
-    component: Registration
+    component: () => import('../views/Registration.vue')
   },
   {
     path: '/connection',
     name: 'Connection',
-    component: Connection
+    component: () => import('../views/Connection.vue')
+  },
+  {
+    path: '/publications',
+    name: 'Publications',
+    component: () => import('../views/Publications.vue')
   },
   {
     path: '/publication/:id',
     name: 'Publication',
-    component: Publication
+    component: () => import('../views/Publication.vue')
   },
   {
     path: '/profil/:id',
     name: 'Profil',
-    component: Profil
+    component: () => import('../views/Profil.vue')
   },
   {
     path: '/about',
     name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+    component: () => import('../views/About.vue')
   }
 ]
 
@@ -48,5 +46,17 @@ const router = new VueRouter({
   mode: 'history',
   routes
 })
+
+router.beforeEach((to, from, next) => {
+  const publicPages = ['/registration', '/connection', '/'];
+  const authRequired = !publicPages.includes(to.path);
+  const loggedIn = localStorage.getItem('user');
+
+  if (authRequired && !loggedIn) {
+    next('/connection');
+  } else {
+    next();
+  }
+});
 
 export default router
