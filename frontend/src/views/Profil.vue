@@ -17,7 +17,7 @@
           </div>
           <div class=information__content>
             <p class="information__name">Email :</p>
-            <p class="information__value">{{ user.email }}</p>
+            <a class="information__value information__value--color" :href="`mailto:${user.email}`">{{ user.email }}</a>
           </div>
           <div class=information__content>
             <p class="information__name">Date de naissance :</p>
@@ -48,7 +48,7 @@
                 <ValidationProvider vid="email" name="email" rules="required:@email|email" v-slot="{ errors }">
                   <div class="information__content">
                     <label class="information__name" for="email">Email :</label>
-                    <input class="information__value" name="email" v-model="user.email" />
+                    <input class="information__value" type="email" name="email" v-model="user.email" />
                   </div>
                   <span class="error">{{ errors[0] }}</span>              
                 </ValidationProvider>
@@ -88,6 +88,11 @@ export default {
       showDelete: false,
       editProfil: false
     };
+  },
+  watch: {
+    $route() {
+      this.setup(this.$route.params.id);
+    }
   },
   beforeMount() {
     this.setup(this.$route.params.id);
@@ -176,15 +181,11 @@ export default {
   }
   & label {
     cursor: pointer;
-  /*  color: white;
-    position: relative;
-    top: -70%;*/
   }
   & input {
     display: none;
   }
 }
-
 .profil {
   font-family: "Roboto-Medium";
   padding-top: 50px;
@@ -230,6 +231,9 @@ export default {
   }
   &__value {
     margin: 10px 0 10px 10px;
+    &--color {
+      color: black;
+    }
   }
 }
 .editProfil {
