@@ -1,6 +1,7 @@
 const db = require("../models");
 const userId = require("../utils/userId.js")
 const Comment = db.comment;
+const User = db.user;
 const Like = db.like;
 const fs = require('fs');
 
@@ -17,7 +18,32 @@ exports.create = (req, res, next) => {
 		userId: userId(req)
 	}
   Comment.create( commentObject )
-    .then(() => res.status(201).json({ message: 'Commentaire ajouté !' }))
+		.then(result => {
+			Comment.findByPk(result.id, {
+				include: [{ model: User, attributes: ['pseudo', 'attachement'] }]
+			})
+				.then(comment => {
+					const creatorComment = comment.dataValues.user
+					const newComment = {
+						id: comment.dataValues.id,
+						message: comment.dataValues.message,
+						attachement: comment.dataValues.attachement,
+						like: comment.dataValues.like,
+						dislike: comment.dataValues.dislike,
+						stateLike: {
+							disliked: false,
+							liked: false
+						},
+						createdAt: comment.dataValues.createdAt,
+						updatedAt: comment.dataValues.updatedAt,
+						userId: comment.dataValues.userId,
+						commentedBy: creatorComment.dataValues.pseudo,
+						avatar: creatorComment.dataValues.attachement,
+					}
+					res.status(201).json(newComment)
+				})
+				.catch(err =>	res.status(400).send({ message: err.message }));
+		})
     .catch(err => res.status(500).send({ message: err.message }));
 };
 
@@ -37,7 +63,7 @@ exports.modify = (req, res, next) => {
 				}
 			}
 			Comment.update( commentObject, { where: { id: req.params.id }})
-				.then(() => res.status(200).json({ message: 'Commentaire modifiée !' }))
+				.then(() => res.status(200).json( commentObject ))
 				.catch(err => res.status(400).json({ message: err.message }));		
 		}
 		else {
@@ -69,6 +95,16 @@ exports.delete = (req, res, next) => {
 exports.findOne = (req, res, next) => {
   Comment.findByPk(req.params.id, {	attributes: { exclude: ['updatedAt'] } })
 		.then(comment => res.status(200).json(comment))
+		.catch(err => res.status(500).send({ message: err.message }));
+};
+
+exports.findAll = (req, res, next) => {
+  Comment.findAll(
+		{	attributes: { exclude: ['updatedAt'] },
+			include: [{ model: User, attributes: ['pseudo', 'attachement'] }]
+		}
+	)
+		.then(comments => res.status(200).json(comments))
 		.catch(err => res.status(500).send({ message: err.message }));
 };
 
