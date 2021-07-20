@@ -16,7 +16,7 @@ exports.signup = (req, res, next) => {
     .then(() => {
       User.findOne({ where: { pseudo: req.body.pseudo }})
         .then(user => {
-          res.status(200).json({
+          res.status(201).json({
             Id: user.id,
             pseudo: user.pseudo,
             email: user.email,
@@ -46,7 +46,7 @@ exports.login = (req, res, next) => {
         res.status(404).send({ message: "Erreur de nom d'utilisateur ou de mot de passe!" });
         return res.end();
       }
-      res.status(200).json({
+      res.status(201).json({
         Id: user.id,
         pseudo: user.pseudo,
         email: user.email,

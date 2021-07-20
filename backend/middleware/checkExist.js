@@ -10,9 +10,7 @@ exports.publication = (req, res, next) => {
     Publication.findByPk(req.body.publicationId)
       .then(publication => {
         if (publication == null) {
-          if (req.baseUrl == "/api/comments") {
-            fs.unlinkSync(`images/comments/${req.file.filename}`)
-          }
+          fs.unlinkSync(`images/comments/${req.file.filename}`)
           res.status(404).send({ message: "Cette publication n'existe pas !" });
           return res.end();
         }
