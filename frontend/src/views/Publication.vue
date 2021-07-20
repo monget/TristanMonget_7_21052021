@@ -44,6 +44,26 @@
             </div>
           </div>
         </div>
+        <div>
+          <ValidationObserver v-slot="{ handleSubmit }"> <!--  -->
+            <form class="form" @submit.prevent="handleSubmit(postComment)"> <!--  -->
+              <div class="form__wrap">
+                <ValidationProvider ref="error" vid="comment" name="comment" v-slot="{ errors }">
+                  <textarea class="content__textarea" type="text" id="comment" name="comment" @input="resize" placeholder="Votre commentaire..." v-model="message"/> <!--  -->
+                  <span class="content__error">{{ errors[0] }}</span>
+                </ValidationProvider>
+                <img class="content__attachement" :src="displayFile()" v-if="image"/> <!--  -->
+                <div class="footer__wrap">
+                  <div class="add_file">
+                    <label for="file">Ajouter<img src="../assets/icons/file-image-regular.svg"></label>
+                    <input @change="fileSelected" type="file" name="file" id="file" class="inputfile" /> <!--  -->
+                  </div>
+                  <div><button class="validate"><img src="../assets/icons/paper-plane-regular.svg"></button></div>
+                </div>
+              </div>
+            </form>
+          </ValidationObserver>
+        </div>
         <Comments
           v-if="publication.comments"
           :comments="publication.comments"
@@ -54,7 +74,8 @@
 </template>
 
 <script>
-import PublicationDataService from "../services/PublicationDataService";
+import PublicationDataService from "../services/PublicationDataService"
+import CommentDataService from "../services/CommentDataService"
 import Comments from '@/components/Comments.vue'
 import { formatDistance, subDays } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -71,11 +92,18 @@ export default {
       state: {
         liked: '',
         disliked: ''
-      }
+      },
+      message: "",
+      image: null
     };
   },
   beforeMount() {
     this.setup(this.$route.params.id);
+  },
+  mounted() {
+    this.$nextTick(() => {
+      this.$el.setAttribute("style", "height", `${this.$el.scrollHeight}px`);
+    });
   },
   methods: {
     setup(id) {
@@ -103,6 +131,10 @@ export default {
         }
       }
       return false
+    },
+    resize(event) {
+      event.target.style.height = "45px";
+      event.target.style.height = `${event.target.scrollHeight}px`;
     },
     liked(id, state) {
       if (state.liked == false && state.disliked == false) {
@@ -194,8 +226,33 @@ export default {
           });
       }
     },
+    postComment() {
+      const data = new FormData();
+      if (this.image != null) {
+        data.append('image', this.image, this.image.name)
+      }
+      data.append('message', this.message)
+      data.append('publicationId', this.$route.params.id)
+      CommentDataService.create(data)
+        .then(response => {
+          this.message = ""
+          this.image = null
+          this.publication.comments.push(response.data)
+        })
+        .catch(e => {
+          this.$refs.error.setErrors([e.response.data.message])
+        });
+    },
+    fileSelected(event) {
+      this.image = event.target.files[0]
+    },
+    displayFile() {
+      if (this.image != null) {
+        return this.url = URL.createObjectURL(this.image);
+      }
+    },
     close() {
-      this.$router.push('/');
+      this.$router.push('/publications');
     }
   }
 }
@@ -305,5 +362,69 @@ a {
   cursor: pointer;
   text-decoration: none;
   color: black;
+}
+
+.form {
+  font-size: 20px;
+  padding: 2%;
+  background-color: white;
+  border: 2px solid #909090;
+  &__wrap {
+    font-family: "Roboto-Regular";
+    padding: 4%;
+  }
+}
+.content {
+  &__textarea {
+    font-family: "Roboto-Regular";
+    font-size: 25px;
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+    height: 45px;
+  }
+  &__error {
+    display: block;
+    text-align: center;
+    font-size: 26px;
+    color: red;
+  }
+  &__attachement {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+  }
+}
+.footer__wrap {
+  margin: 25px 0px 0px;
+  display: flex;
+  justify-content: space-between;
+}
+.add_file {
+  color: #577DDD;
+  font-size: 30px;
+  & label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    & img {
+      width: auto;
+      height: 47px;
+      margin-left: 15px;
+    }
+  }
+  & input {
+    display: none;
+  }
+}
+.validate {
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  background-color: white;
+  & img {
+    height: 47px;
+  }
 }
 </style>
