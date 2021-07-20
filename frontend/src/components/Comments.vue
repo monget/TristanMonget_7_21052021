@@ -13,7 +13,7 @@
         <div class="message">
         <div class="comment__head">
           <div class="profil">
-            <router-link class="profil__link" :to="'profil/' + comment.userId">
+            <router-link class="profil__link" :to="'../profil/' + comment.userId">
               <img class="profil__avatar" :src="comment.avatar" :title="comment.commentedBy">
               <span>{{ comment.commentedBy }}</span>
             </router-link>
@@ -36,14 +36,16 @@
           <div class="content__footer">
             <div class="like">
               <div>
-                <button @click="liked(comment.id, index)">
-                  <img src="../assets/icons/thumbs-up-regular.svg">
+                <button @click="liked(comment.id, index, comment.stateLike)">
+                  <img v-if="comment.stateLike.liked" src="../assets/icons/thumbs-up-regular-green.svg">
+                  <img v-else src="../assets/icons/thumbs-up-regular.svg">
                 </button>
                 {{ comment.like }}
               </div>
               <div>
-                <button @click="disliked(comment.id, index)">
-                  <img src="../assets/icons/thumbs-down-regular.svg">
+                <button @click="disliked(comment.id, index, comment.stateLike)">
+                  <img v-if="comment.stateLike.disliked" src="../assets/icons/thumbs-down-regular-red.svg">
+                  <img v-else src="../assets/icons/thumbs-down-regular.svg">
                 </button>
                 {{ comment.dislike }}
               </div>
@@ -57,7 +59,7 @@
 </template>
 
 <script>
-import CommentDataService from "../services/CommentDataService";
+import CommentDataService from "../services/CommentDataService"
 import Delete from '@/components/Delete.vue'
 import { formatDistance, subDays } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -87,6 +89,7 @@ export default {
   },
   methods: {
     setup() {
+      console.log(this.comments)
     },
     formatDate(date) {
       return formatDistance(subDays(new Date(date), 0), new Date(), { locale: fr })
@@ -105,30 +108,95 @@ export default {
       }
       return false
     },
-    liked(id, index) {
-      const data = {
-        like: 1
+    liked(id, index, state) {
+      if (state.liked == false && state.disliked == false) {
+        const data = { like: 1 }
+        CommentDataService.like(id, data)
+          .then(
+            this.comments[index].like += 1,
+            this.comments[index].stateLike = {
+              disliked: false,
+              liked: true
+            },
+          )
+          .catch(e => {
+            console.log(e.response.data);
+          });
       }
-      CommentDataService.like(id, data)
-        .then(
-          this.comments[index].like += 1
-        )
-        .catch(e => {
-          console.log(e.response.data);
-        });
+      else if (state.liked == true && state.disliked == false) {
+        const data = { like: 0 }
+        CommentDataService.like(id, data)
+          .then(
+            this.comments[index].like -= 1,
+            this.comments[index].stateLike = {
+              disliked: false,
+              liked: false
+            }
+          )
+          .catch(e => {
+            console.log(e.response.data);
+          });
+      }
+      else if (state.liked == false && state.disliked == true) {
+        const data = { like: 1 }
+        CommentDataService.like(id, data)
+          .then(
+            this.comments[index].like += 1,
+            this.comments[index].dislike += 1,
+            this.comments[index].stateLike = {
+              disliked: false,
+              liked: true
+            }
+          )
+          .catch(e => {
+            console.log(e.response.data);
+          });
+      }
     },
-    disliked(id, index) {
-      const data = {
-        like: -1
+    disliked(id, index, state) {
+      if (state.liked == false && state.disliked == false) {
+        const data = { like: -1 }
+        CommentDataService.like(id, data)
+          .then(
+            this.comments[index].dislike -= 1,
+            this.comments[index].stateLike = {
+              disliked: true,
+              liked: false
+            },
+          )
+          .catch(e => {
+            console.log(e.response.data);
+          });
       }
-      CommentDataService.like(id, data)
-        .then(response => {
-          this.comments[index].dislike -= 1
-          console.log(response)       
-        })
-        .catch(e => {
-          console.log(e.response);
-        });
+      else if (state.disliked == true && state.liked == false) {
+        const data = { like: 0 }
+        CommentDataService.like(id, data)
+          .then(
+            this.comments[index].dislike += 1,
+            this.comments[index].stateLike = {
+              disliked: false,
+              liked: false
+            }
+          )
+          .catch(e => {
+            console.log(e.response.data);
+          });
+      }
+      else if (state.disliked == false && state.liked == true) {
+        const data = { like: -1 }
+        CommentDataService.like(id, data)
+          .then(
+            this.comments[index].like -= 1,
+            this.comments[index].dislike -= 1,
+            this.comments[index].stateLike = {
+              disliked: true,
+              liked: false
+            }
+          )
+          .catch(e => {
+            console.log(e.response.data);
+          });
+      }
     },
     addcomment(data) {
       this.comments.unshift(data)
