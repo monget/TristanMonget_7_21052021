@@ -7,7 +7,8 @@
         </router-link>
       </div>
       <div class="buttons" v-if="logged">
-        <router-link :to="'/profil/' + userId()">Profil</router-link>
+        <router-link v-if="!profil" :to="`/profil/${id()}`">Profil</router-link>
+        <router-link v-else to="/publications">Accueil</router-link>
         <a href @click="logOut">Déconnection</a>
       </div>
       <div class="buttons" v-else>
@@ -21,6 +22,11 @@
 <script>
 export default {
   name: 'Header',
+  data() {
+    return {
+      profil: ''
+    }
+  },
   computed: {
     logged() {
       if (this.$store.state.auth.status.loggedIn) {
@@ -29,15 +35,23 @@ export default {
       return false
     }
   },
+  watch: {
+    $route() {
+      if (this.$route.path === `/profil/${this.$store.state.auth.user.Id}`) {
+        return this.profil = true
+      }
+      else {
+        return this.profil = false
+      }
+    }
+  },
   methods: {
     logOut() {
       this.$store.dispatch('auth/logout');
       this.$router.push('/connection');
     },
-    userId() {
-      if (this.$store.state.auth.user.Id) {
-        return this.$store.state.auth.user.Id
-      }
+    id() {
+      return this.$store.state.auth.user.Id
     }
   }
 }
