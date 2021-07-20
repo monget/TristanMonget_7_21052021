@@ -107,14 +107,14 @@ exports.findOne = (req, res, next) => {
 		.then(publication => {
 			Like.findOne({ where: { publicationId: req.params.id, userId: userId(req) } })
 				.then(like => {
-					const stateLike = {}
+					const statePublicationLike = {}
 					if (like != null) {
-						stateLike.liked = like.dataValues.usersLiked,
-						stateLike.disliked = like.dataValues.usersDisliked
+						statePublicationLike.liked = like.dataValues.usersLiked,
+						statePublicationLike.disliked = like.dataValues.usersDisliked
 					}
 					else {
-						stateLike.liked = false
-						stateLike.disliked = false
+						statePublicationLike.liked = false
+						statePublicationLike.disliked = false
 					}
 					let creatorPublication = publication.dataValues.user;
 					if (publication.dataValues.TotalComments === 0) {
@@ -124,7 +124,7 @@ exports.findOne = (req, res, next) => {
 							attachement: publication.dataValues.attachement,
 							like: publication.dataValues.like,
 							dislike: publication.dataValues.dislike,
-							stateLike: stateLike,
+							stateLike: statePublicationLike,
 							createdAt: publication.dataValues.createdAt,
 							updatedAt: publication.dataValues.updatedAt,
 							userId: publication.dataValues.userId,
@@ -135,10 +135,21 @@ exports.findOne = (req, res, next) => {
 						res.status(200).json(publicationWithoutComment)
 					}
 					else {
-						Comment.findAll({ where: { publicationId: publication.dataValues.id } })
+						Comment.findAll({ where: { publicationId: publication.dataValues.id },
+							include: [{ model: Like, where: { userId: userId(req) }, required: false }]
+						})
 							.then(comments => {
 								let arrayComments = [];
 								comments.forEach(comment => {
+									const stateCommentLike = {}
+									comment.dataValues.likes.forEach(like => {
+											stateCommentLike.liked = like.dataValues.usersLiked,
+											stateCommentLike.disliked = like.dataValues.usersDisliked
+									})
+									if (comment.dataValues.likes.length === 0) {
+										stateCommentLike.liked = false
+										stateCommentLike.disliked = false
+									}
 									User.findByPk(comment.dataValues.userId)
 										.then(user => {
 											let objectComments = {
@@ -147,6 +158,7 @@ exports.findOne = (req, res, next) => {
 												attachement: comment.dataValues.attachement,
 												like: comment.dataValues.like,
 												dislike: comment.dataValues.dislike,
+												stateLike: stateCommentLike,
 												createdAt: comment.dataValues.createdAt,
 												userId: comment.dataValues.userId,
 												commentedBy: user.dataValues.pseudo,
@@ -161,7 +173,7 @@ exports.findOne = (req, res, next) => {
 													attachement: publication.dataValues.attachement,
 													like: publication.dataValues.like,
 													dislike: publication.dataValues.dislike,
-													stateLike: stateLike,
+													stateLike: statePublicationLike,
 													createdAt: publication.dataValues.createdAt,
 													updatedAt: publication.dataValues.updatedAt,
 													userId: publication.dataValues.userId,
@@ -202,14 +214,14 @@ exports.findAll = (req, res, next) => {
 			publications.forEach(publication => {
 				Like.findOne({ where: { publicationId: publication.dataValues.id, userId: userId(req) } })
 					.then(like => {
-						const stateLike = {}
+						const statePublicationLike = {}
 						if (like != null) {
-							stateLike.liked = like.dataValues.usersLiked,
-							stateLike.disliked = like.dataValues.usersDisliked
+							statePublicationLike.liked = like.dataValues.usersLiked,
+							statePublicationLike.disliked = like.dataValues.usersDisliked
 						}
 						else {
-							stateLike.liked = false
-							stateLike.disliked = false
+							statePublicationLike.liked = false
+							statePublicationLike.disliked = false
 						}
 						let creatorPublication = publication.dataValues.user;
 						if (publication.dataValues.TotalComments === 0) {
@@ -219,7 +231,7 @@ exports.findAll = (req, res, next) => {
 								attachement: publication.dataValues.attachement,
 								like: publication.dataValues.like,
 								dislike: publication.dataValues.dislike,
-								stateLike: stateLike,
+								stateLike: statePublicationLike,
 								createdAt: publication.dataValues.createdAt,
 								updatedAt: publication.dataValues.updatedAt,
 								userId: publication.dataValues.userId,
@@ -255,7 +267,7 @@ exports.findAll = (req, res, next) => {
 													attachement: publication.dataValues.attachement,
 													like: publication.dataValues.like,
 													dislike: publication.dataValues.dislike,
-													stateLike: stateLike,
+													stateLike: statePublicationLike,
 													createdAt: publication.dataValues.createdAt,
 													updatedAt: publication.dataValues.updatedAt,
 													userId: publication.dataValues.userId,
