@@ -1,12 +1,5 @@
 <template>
   <div>
-    <Delete
-      v-if="deleted"
-      message="commentaire"
-      :id="commentDelete.id"
-      @delete-comment="deletecomment()"
-      @closing-popup-delete="closeDelete($event)"
-    />
     <div class="comment">
       <div class="comment__wrap" v-for="(comment, index) in comments" :key="index">
         <div class="line"/>
@@ -60,46 +53,17 @@
 
 <script>
 import CommentDataService from "../services/CommentDataService"
-import Delete from '@/components/Delete.vue'
 import { formatDistance, subDays } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 export default {
   name: 'Comments',
-  components: {
-    Delete
-  },
   props: {
     comments: Array
   },
-  data() {
-    return {
-      commentEdit: '',
-      commentDelete: '',
-      connected: false,
-      userAvatar: null,
-      deleted: false,
-      publish: false,
-      edit: false
-    };
-  },
-  beforeMount() {
-    this.setup();
-    this.avatar();
-  },
   methods: {
-    setup() {
-      console.log(this.comments)
-    },
     formatDate(date) {
       return formatDistance(subDays(new Date(date), 0), new Date(), { locale: fr })
-    },
-    avatar() {
-      if (localStorage.user) {
-        let user = JSON.parse(localStorage.getItem('user'));
-        this.userAvatar = user.avatar;
-        this.connected = true;
-      }
     },
     access(userId) {
       let user = JSON.parse(localStorage.getItem('user'));
@@ -198,38 +162,12 @@ export default {
           });
       }
     },
-    addcomment(data) {
-      this.comments.unshift(data)
-    },
-    editcomment(data) {
-      this.comments[this.commentEdit.index].message = data.message
-      if (data.attachement) {
-        this.comments[this.commentEdit.index].attachement = data.attachement
-      }
-    },
-    deletecomment() {
-      this.comments.splice(this.commentDelete.index, 1)
-    },
-    showPublish() {
-      return this.publish = true;
-    },
-    closePublish(condition) {
-      return this.publish = condition;
-    },
     showEdit(id, message, attachement, index) {
-      this.commentEdit = { id, message, attachement, index }
-      return this.edit = true;
-    },
-    closeEdit(condition) {
-      return this.edit = condition;
+      this.$emit('comment-edit', { id, message, attachement, index, popup: true })
     },
     showDelete(id, index) {
-      this.commentDelete = { id, index }
-      return this.deleted = true
+      this.$emit('comment-delete', { id, index, popup: true })
     },
-    closeDelete(condition) {
-      return this.deleted = condition;
-    }
   }
 }
 </script>
