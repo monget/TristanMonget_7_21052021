@@ -1,6 +1,7 @@
 const db = require("../models");
 const Sequelize = require("sequelize");
 const userId = require("../utils/userId.js");
+const isAdmin = require("../utils/isAdmin.js");
 const Publication = db.publication;
 const Comment = db.comment;
 const User = db.user;
@@ -77,14 +78,31 @@ exports.modify = (req, res, next) => {
 exports.delete = (req, res, next) => {
 	Publication.findOne({ where: { id: req.params.id }})
 		.then(publication => {
-			if (publication.userId == userId(req)) {
+			if (publication.userId == userId(req) || isAdmin(req) === true) {
 				if (publication.attachement != null) {
 					const filename = publication.attachement.split('/images/publications/')[1];
 					fs.unlinkSync(`images/publications/${filename}`)
 				}
-				Publication.destroy({	where: { id: req.params.id }})
+				if (isAdmin(req) === true) {
+					Publication.update({
+						message: "Ce contenu n'est plus disponible.",
+						attachement: null
+						},
+						{ where: { id: req.params.id }
+					})
+						.then(() => res.status(200).json({
+							message: "Ce contenu n'est plus disponible.",
+							attachement: null,
+							disactive: true
+							}
+						))
+						.catch(err => res.status(400).json({ message: err.message }));
+				}
+				else {
+					Publication.destroy({	where: { id: req.params.id }})
 					.then(() => res.status(200).json({ message: 'Publication supprimé !' }))
 					.catch(err => res.status(400).send({ message: err.message }));
+				}
 			}
 			else {
 				return res.status(400).json({ message: "Opération interdite !" });

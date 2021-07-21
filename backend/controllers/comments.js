@@ -1,5 +1,6 @@
 const db = require("../models");
 const userId = require("../utils/userId.js")
+const isAdmin = require("../utils/isAdmin.js");
 const Comment = db.comment;
 const User = db.user;
 const Like = db.like;
@@ -76,14 +77,31 @@ exports.modify = (req, res, next) => {
 exports.delete = (req, res, next) => {
 	Comment.findOne({ where: { id: req.params.id }})
 		.then(comment => {
-			if (comment.userId == userId(req)) {
+			if (comment.userId == userId(req) || isAdmin(req) === true) {
 				if (comment.attachement != null) {
 					const filename = comment.attachement.split('/images/comments/')[1];
 					fs.unlinkSync(`images/comments/${filename}`)
 				}
-				Comment.destroy({	where: { id: req.params.id }})
+				if (isAdmin(req) === true) {
+					Comment.update({
+						message: "Ce contenu n'est plus disponible.",
+						attachement: null
+						},
+						{ where: { id: req.params.id }
+					})
+						.then(() => res.status(200).json({
+							message: "Ce contenu n'est plus disponible.",
+							attachement: null,
+							disactive: true
+							}
+						))
+						.catch(err => res.status(400).json({ message: err.message }));
+				}
+				else {
+					Comment.destroy({	where: { id: req.params.id }})
 					.then(() => res.status(200).json({ message: 'Commentaire supprimé !' }))
 					.catch(err => res.status(400).send({ message: err.message }));
+				}
 			}
 			else {
 				return res.status(400).json({ message: "Opération interdite !" });
