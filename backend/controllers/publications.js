@@ -131,6 +131,7 @@ exports.findOne = (req, res, next) => {
 							publishedBy: creatorPublication.dataValues.pseudo,
 							avatar: creatorPublication.dataValues.attachement,
 							totalComments: publication.dataValues.TotalComments,
+							comments: []
 						}
 						res.status(200).json(publicationWithoutComment)
 					}
@@ -224,66 +225,26 @@ exports.findAll = (req, res, next) => {
 							statePublicationLike.disliked = false
 						}
 						let creatorPublication = publication.dataValues.user;
-						if (publication.dataValues.TotalComments === 0) {
-							const publicationWithoutComment = {
-								id: publication.dataValues.id,
-								message: publication.dataValues.message,
-								attachement: publication.dataValues.attachement,
-								like: publication.dataValues.like,
-								dislike: publication.dataValues.dislike,
-								stateLike: statePublicationLike,
-								createdAt: publication.dataValues.createdAt,
-								updatedAt: publication.dataValues.updatedAt,
-								userId: publication.dataValues.userId,
-								publishedBy: creatorPublication.dataValues.pseudo,
-								avatar: creatorPublication.dataValues.attachement,
-								totalComments: publication.dataValues.TotalComments,
-							}
-							arrayPublications.push(publicationWithoutComment)
+
+						const publicationObject = {
+							id: publication.dataValues.id,
+							message: publication.dataValues.message,
+							attachement: publication.dataValues.attachement,
+							like: publication.dataValues.like,
+							dislike: publication.dataValues.dislike,
+							stateLike: statePublicationLike,
+							createdAt: publication.dataValues.createdAt,
+							updatedAt: publication.dataValues.updatedAt,
+							userId: publication.dataValues.userId,
+							publishedBy: creatorPublication.dataValues.pseudo,
+							avatar: creatorPublication.dataValues.attachement,
+							totalComments: publication.dataValues.TotalComments,
 						}
-						Comment.findAll({ where: { publicationId: publication.dataValues.id } })
-							.then(comments => {
-								let arrayComments = [];
-								comments.forEach(comment => {
-									User.findByPk(comment.dataValues.userId)
-										.then(user => {
-											let objectComments = {
-												id: comment.dataValues.id,
-												message: comment.dataValues.message,
-												attachement: comment.dataValues.attachement,
-												like: comment.dataValues.like,
-												dislike: comment.dataValues.dislike,
-												createdAt: comment.dataValues.createdAt,
-												userId: comment.dataValues.userId,
-												commentedBy: user.dataValues.pseudo,
-												avatar: user.dataValues.attachement
-											}
-											arrayComments.push(objectComments);
-											
-											if (comments.length === arrayComments.length) {										
-												let objectPublication = {
-													id: publication.dataValues.id,
-													message: publication.dataValues.message,
-													attachement: publication.dataValues.attachement,
-													like: publication.dataValues.like,
-													dislike: publication.dataValues.dislike,
-													stateLike: statePublicationLike,
-													createdAt: publication.dataValues.createdAt,
-													updatedAt: publication.dataValues.updatedAt,
-													userId: publication.dataValues.userId,
-													publishedBy: creatorPublication.dataValues.pseudo,
-													avatar: creatorPublication.dataValues.attachement,
-													totalComments: publication.dataValues.TotalComments,
-													comments: arrayComments
-												}
-												arrayPublications.push(objectPublication)
-												if (publications.length === arrayPublications.length) {
-													res.status(200).json(arrayPublications)
-												}
-											}
-										})	
-								})
-							})
+						arrayPublications.push(publicationObject)
+
+						if (publications.length === arrayPublications.length) {
+							res.status(200).json(arrayPublications)
+						}
 					})
 					.catch(err =>	res.status(400).send({ message: err.message }));
 			})	
