@@ -1,33 +1,75 @@
 const db = require("../models");
 const User = db.user;
 const userId = require("../utils/userId.js");
+const isAdmin = require("../utils/isAdmin.js");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 require('dotenv').config()
 
 exports.signup = (req, res, next) => {
-  User.create({
-    pseudo: req.body.pseudo,
-    email: req.body.email,
-    password: bcrypt.hashSync(req.body.password, 10),
-    attachement: `${req.protocol}://${req.get('host')}/images/users/avatarDefault.svg`,
-  })
-    .then(() => {
-      User.findOne({ where: { pseudo: req.body.pseudo }})
-        .then(user => {
-          res.status(201).json({
-            Id: user.id,
-            pseudo: user.pseudo,
-            email: user.email,
-            avatar: user.attachement,
-            token: jwt.sign(
-                { userId: user.id},
-                process.env.JWT_SECRET,
-                { expiresIn: process.env.JWT_EXPIRES_IN }
-            ),
-          })
+  User.findByPk(1)
+    .then(result => {
+      if (result == null) {
+        User.create({
+          pseudo: req.body.pseudo,
+          email: req.body.email,
+          password: bcrypt.hashSync(req.body.password, 10),
+          attachement: `${req.protocol}://${req.get('host')}/images/users/avatarDefault.svg`,
+          isAdmin: true
         })
+        .then(() => {
+          User.findOne({ where: { pseudo: req.body.pseudo }})
+            .then(user => {
+              res.status(201).json({
+                Id: user.id,
+                pseudo: user.pseudo,
+                email: user.email,
+                avatar: user.attachement,
+                isAdmin: user.isAdmin,
+                token: jwt.sign(
+                  { 
+                    userId: user.id,
+                    isAdmin: user.isAdmin
+                  },
+                  process.env.JWT_SECRET,
+                  { expiresIn: process.env.JWT_EXPIRES_IN }
+                ),
+              })
+            })
+            .catch(err =>	res.status(400).send({ message: err.message }));
+        })
+      }
+      else {
+        User.create({
+          pseudo: req.body.pseudo,
+          email: req.body.email,
+          password: bcrypt.hashSync(req.body.password, 10),
+          attachement: `${req.protocol}://${req.get('host')}/images/users/avatarDefault.svg`,
+          isAdmin: false
+        })
+        .then(() => {
+          User.findOne({ where: { pseudo: req.body.pseudo }})
+            .then(user => {
+              res.status(201).json({
+                Id: user.id,
+                pseudo: user.pseudo,
+                email: user.email,
+                avatar: user.attachement,
+                isAdmin: user.isAdmin,
+                token: jwt.sign(
+                  { 
+                    userId: user.id,
+                    isAdmin: user.isAdmin
+                  },
+                  process.env.JWT_SECRET,
+                  { expiresIn: process.env.JWT_EXPIRES_IN }
+                ),
+              })
+            })
+            .catch(err =>	res.status(400).send({ message: err.message }));
+        })
+      }
     })
     .catch(err => res.status(500).send({ message: err.message }));
 };
@@ -51,8 +93,12 @@ exports.login = (req, res, next) => {
         pseudo: user.pseudo,
         email: user.email,
         avatar: user.attachement,
+        isAdmin: user.isAdmin,
         token: jwt.sign(
-            { userId: user.id},
+            { 
+              userId: user.id,
+              isAdmin: user.isAdmin
+            },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN }
         ),
@@ -109,7 +155,7 @@ exports.editProfil = (req, res, next) => {
 exports.deleteProfil = (req, res, next) => {
   User.findByPk(req.params.id)
     .then(user => {
-      if (user.id == userId(req)) {
+      if (user.id == userId(req) || isAdmin(req) === true) {
         if (user.attachement != null) {
 					const filename = user.attachement.split('/images/users/')[1];
           if (filename != "avatarDefault.svg") {
