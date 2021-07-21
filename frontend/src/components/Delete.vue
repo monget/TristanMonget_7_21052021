@@ -20,7 +20,7 @@
 <script>
 import UserDataService from "../services/UserDataService";
 import PublicationDataService from "../services/PublicationDataService";
-//import CommentDataService from "../services/CommentDataService";
+import CommentDataService from "../services/CommentDataService";
 
 export default {
   name: 'Publish',
@@ -44,6 +44,16 @@ export default {
         PublicationDataService.delete(this.id)
           .then(
             this.$emit('delete-publication'),
+            this.$emit('closing-popup-delete', false)
+          )
+          .catch(e => {
+            console.log(e);
+          });
+      }
+      else if (value == 'commentaire') {
+        CommentDataService.delete(this.id)
+          .then(
+            this.$emit('delete-comment'),
             this.$emit('closing-popup-delete', false)
           )
           .catch(e => {
@@ -78,7 +88,7 @@ export default {
 .delete {
   font-family: "Roboto-Regular";
   padding: 2% 2% 1%;
-  width: 47%;
+  width: 50%;
   margin: auto;
   border: 1px solid #00000050;
   background-color: white;
