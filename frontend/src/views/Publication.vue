@@ -13,6 +13,7 @@
       v-if="commentDelete.popup"
       message="commentaire"
       :id="commentDelete.id"
+      @disactive-comment="disactiveComment($event)"
       @delete-comment="deleteComment()"
       @closing-popup-delete="closeDelete($event)"
     />
@@ -147,15 +148,6 @@ export default {
     formatDate(date) {
       return formatDistance(subDays(new Date(date), 0), new Date(), { locale: fr })
     },
-    access(userId) {
-      if (localStorage.user) {
-        let user = JSON.parse(localStorage.getItem('user'));
-        if (user.Id === userId) {
-          return true
-        }
-      }
-      return false
-    },
     resize(event) {
       event.target.style.height = "45px";
       event.target.style.height = `${event.target.scrollHeight}px`;
@@ -284,14 +276,18 @@ export default {
         this.publication.comments[this.commentEdit.index].attachement = data.attachement
       }
     },
-    closeEdit(condition) {
-      return this.commentEdit.popup = condition;
+    disactiveComment(data){
+      this.publication.comments[this.commentDelete.index].message = data.message
+      this.publication.comments[this.commentDelete.index].attachement = data.attachement
     },
     commentDeleteData(data) {
       this.commentDelete = data
     },
     deleteComment() {
       this.publication.comments.splice(this.commentDelete.index, 1)
+    },
+    closeEdit(condition) {
+      return this.commentEdit.popup = condition;
     },
     closeDelete(condition) {
       return this.commentDelete.popup = condition;
