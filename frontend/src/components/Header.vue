@@ -37,11 +37,13 @@ export default {
   },
   watch: {
     $route() {
-      if (this.$route.path === `/profil/${this.$store.state.auth.user.Id}`) {
-        return this.profil = true
-      }
-      else {
-        return this.profil = false
+      if (this.$store.state.auth.status.loggedIn) {
+        if (this.$route.path === `/profil/${this.$store.state.auth.user.Id}`) {
+          return this.profil = true
+        }
+        else {
+          return this.profil = false
+        }
       }
     }
   },
