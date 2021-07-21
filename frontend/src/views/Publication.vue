@@ -1,5 +1,21 @@
 <template>
   <main>
+    <Edit
+      v-if="commentEdit.popup"
+      :id="commentEdit.id"
+      :message="commentEdit.message"
+      :attachement="commentEdit.attachement"
+      content="commentaire"
+      @edit-comment="editComment($event)"
+      @closing-popup-edit="closeEdit($event)"
+    />
+    <Delete
+      v-if="commentDelete.popup"
+      message="commentaire"
+      :id="commentDelete.id"
+      @delete-comment="deleteComment()"
+      @closing-popup-delete="closeDelete($event)"
+    />
     <div class="home">
       <div class="publication">
         <div class="publication__wrap">
@@ -45,18 +61,18 @@
           </div>
         </div>
         <div>
-          <ValidationObserver v-slot="{ handleSubmit }"> <!--  -->
-            <form class="form" @submit.prevent="handleSubmit(postComment)"> <!--  -->
+          <ValidationObserver v-slot="{ handleSubmit }">
+            <form class="form" @submit.prevent="handleSubmit(postComment)">
               <div class="form__wrap">
                 <ValidationProvider ref="error" vid="comment" name="comment" v-slot="{ errors }">
-                  <textarea class="content__textarea" type="text" id="comment" name="comment" @input="resize" placeholder="Votre commentaire..." v-model="message"/> <!--  -->
+                  <textarea class="content__textarea" type="text" id="comment" name="comment" @input="resize" placeholder="Votre commentaire..." v-model="message"/>
                   <span class="content__error">{{ errors[0] }}</span>
                 </ValidationProvider>
-                <img class="content__attachement" :src="displayFile()" v-if="image"/> <!--  -->
+                <img class="content__attachement" :src="displayFile()" v-if="image"/>
                 <div class="footer__wrap">
                   <div class="add_file">
                     <label for="file">Ajouter<img src="../assets/icons/file-image-regular.svg"></label>
-                    <input @change="fileSelected" type="file" name="file" id="file" class="inputfile" /> <!--  -->
+                    <input @change="fileSelected" type="file" name="file" id="file" class="inputfile" />
                   </div>
                   <div><button class="validate"><img src="../assets/icons/paper-plane-regular.svg"></button></div>
                 </div>
@@ -67,6 +83,8 @@
         <Comments
           v-if="publication.comments"
           :comments="publication.comments"
+          @comment-delete="commentDeleteData($event)"
+          @comment-edit="commentEditData($event)"
         />
       </div>
     </div>
@@ -77,13 +95,17 @@
 import PublicationDataService from "../services/PublicationDataService"
 import CommentDataService from "../services/CommentDataService"
 import Comments from '@/components/Comments.vue'
+import Edit from '@/components/Edit.vue'
+import Delete from '@/components/Delete.vue'
 import { formatDistance, subDays } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 export default {
   name: 'Publication',
   components: {
-    Comments
+    Comments,
+    Edit,
+    Delete
   },
   data() {
     return {
@@ -94,7 +116,9 @@ export default {
         disliked: ''
       },
       message: "",
-      image: null
+      image: null,
+      commentEdit: {},
+      commentDelete: {}
     };
   },
   beforeMount() {
@@ -250,6 +274,27 @@ export default {
       if (this.image != null) {
         return this.url = URL.createObjectURL(this.image);
       }
+    },
+    commentEditData(data) {
+      this.commentEdit = data
+    },
+    editComment(data) {
+      this.publication.comments[this.commentEdit.index].message = data.message
+      if (data.attachement) {
+        this.publication.comments[this.commentEdit.index].attachement = data.attachement
+      }
+    },
+    closeEdit(condition) {
+      return this.commentEdit.popup = condition;
+    },
+    commentDeleteData(data) {
+      this.commentDelete = data
+    },
+    deleteComment() {
+      this.publication.comments.splice(this.commentDelete.index, 1)
+    },
+    closeDelete(condition) {
+      return this.commentDelete.popup = condition;
     },
     close() {
       this.$router.push('/publications');
