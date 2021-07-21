@@ -5,7 +5,7 @@
             <img src="../assets/icons/times-solid.svg">
       </button>
       <ValidationObserver v-slot="{ handleSubmit }">
-        <form @submit.prevent="handleSubmit(editPublication)" class="form">
+        <form @submit.prevent="handleSubmit(editForm)" class="form">
           <div class="form__wrap">
             <ValidationProvider ref="error" vid="comment" name="comment" v-slot="{ errors }">
               <textarea class="content__textarea" type="text" id="comment" name="comment" v-model="newMessage"/>
@@ -14,7 +14,7 @@
             <img class="content__attachement" :src="displayFile()" v-if="attachement || image"/>
             <div class="footer__wrap">
               <div class="add_file">
-                <label for="file"> {{ attachement ? 'Modifier' : 'Ajouter' }} <img src="../assets/icons/file-image-regular.svg"></label>
+                <label for="file"> {{ attachement || image ? 'Modifier' : 'Ajouter' }} <img src="../assets/icons/file-image-regular.svg"></label>
                 <input @change="fileSelected" type="file" name="file" id="file" class="inputfile" />
               </div>
               <div><button class="validate"><img src="../assets/icons/paper-plane-regular.svg"></button></div>
@@ -27,14 +27,16 @@
 </template>
 
 <script>
-import PublicationDataService from "../services/PublicationDataService";
+import PublicationDataService from "../services/PublicationDataService"
+import CommentDataService from "../services/CommentDataService"
 
 export default {
   name: 'Publish',
   props: {
     id: Number,
     message: String,
-    attachement: String
+    attachement: String,
+    content: String
   },
   data() {
     return {
@@ -43,22 +45,38 @@ export default {
     };
   },
   methods: {
-    editPublication() {
+    editForm() {
       const data = new FormData();
       if (this.image != null) {
         data.append('image', this.image, this.image.name)
       }
       data.append('message', this.newMessage)
-      PublicationDataService.update(this.id, data)
-        .then(response => {
-          if (response) {
-            this.$emit('edit-publication', response.data)
-            this.$emit('closing-popup-edit', false)
-          }
-        })
-        .catch(e => {
-          this.$refs.error.setErrors([e.response.data.message])
-        });
+      if (this.content === "publication") {
+        PublicationDataService.update(this.id, data)
+          .then(response => {
+            if (response) {
+              this.$emit('edit-publication', response.data)
+              this.$emit('closing-popup-edit', false)
+            }
+          })
+          .catch(e => {
+            this.$refs.error.setErrors([e.response.data.message])
+          });
+      }
+      else if (this.content === "commentaire") {
+        data.append('publicationId', this.$route.params.id)
+        CommentDataService.update(this.id, data)
+          .then(response => {
+            if (response) {
+              this.$emit('edit-comment', response.data)
+              this.$emit('closing-popup-edit', false)
+            }
+          })
+          .catch(e => {
+            this.$refs.error.setErrors([e.response.data.message])
+          });
+      }
+
     },
     fileSelected(event) {
       this.image = event.target.files[0]
