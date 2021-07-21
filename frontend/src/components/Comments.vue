@@ -12,8 +12,8 @@
             </router-link>
             <span class="profil__date">.{{ formatDate(comment.createdAt) }}</span>
           </div>
-          <div class="comment__options" v-if="access(comment.userId)">
-            <button @click="showEdit(comment.id, comment.message, comment.attachement, index)">
+          <div class="comment__options" v-if="creatorComment(comment.userId)">
+            <button v-if="rules(comment.userId)" @click="showEdit(comment.id, comment.message, comment.attachement, index)">
               <img src="../assets/icons/edit-solid.svg">
             </button>
             <button @click="showDelete(comment.id, index)">
@@ -65,12 +65,22 @@ export default {
     formatDate(date) {
       return formatDistance(subDays(new Date(date), 0), new Date(), { locale: fr })
     },
-    access(userId) {
+    creatorComment(userId) {
       let user = JSON.parse(localStorage.getItem('user'));
-      if (user.Id === userId) {
+      if (user.Id === userId || user.isAdmin === true) {
         return true
       }
       return false
+    },
+    rules(userId) {
+      let user = JSON.parse(localStorage.getItem('user'))
+      if (user.isAdmin === true && user.Id != userId) {
+        return false
+      }
+      else if (user.isAdmin === true && user.Id === userId) {
+        return true
+      }
+      return true
     },
     liked(id, index, state) {
       if (state.liked == false && state.disliked == false) {

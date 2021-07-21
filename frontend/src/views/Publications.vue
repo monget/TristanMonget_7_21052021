@@ -10,6 +10,7 @@
       :id="publicationEdit.id"
       :message="publicationEdit.message"
       :attachement="publicationEdit.attachement"
+      content="publication"
       @edit-publication="editPublication($event)"
       @closing-popup-edit="closeEdit($event)"
     />
@@ -17,6 +18,7 @@
       v-if="deleted"
       message="publication"
       :id="publicationDelete.id"
+      @disactive-publication="disactivePublication($event)"
       @delete-publication="deletePublication()"
       @closing-popup-delete="closeDelete($event)"
     />
@@ -35,8 +37,8 @@
               </router-link>
               <span class="profil__date">.{{ formatDate(publication.createdAt) }}</span>
             </div>
-            <div class="publication__options" v-if="access(publication.userId)">
-              <button @click="showEdit(publication.id, publication.message, publication.attachement, index)">
+            <div class="publication__options" v-if="CreatorPublication(publication.userId)">
+              <button v-if="rules(publication.userId)" @click="showEdit(publication.id, publication.message, publication.attachement, index)">
                 <img src="../assets/icons/edit-solid.svg">
               </button>
               <button @click="showDelete(publication.id, index)">
@@ -106,7 +108,7 @@
 </template>
 
 <script>
-import PublicationDataService from "../services/PublicationDataService";
+import PublicationDataService from "../services/PublicationDataService"
 import Publish from '@/components/Publish.vue'
 import Edit from '@/components/Edit.vue'
 import Delete from '@/components/Delete.vue'
@@ -188,12 +190,22 @@ export default {
         this.userAvatar = user.avatar;
       }
     },
-    access(userId) {
+    CreatorPublication(userId) {
       let user = JSON.parse(localStorage.getItem('user'));
-      if (user.Id === userId) {
+      if (user.Id === userId || user.isAdmin === true) {
         return true
       }
       return false
+    },
+    rules(userId) {
+      let user = JSON.parse(localStorage.getItem('user'))
+      if (user.isAdmin === true && user.Id != userId) {
+        return false
+      }
+      else if (user.isAdmin === true && user.Id === userId) {
+        return true
+      }
+      return true
     },
     liked(id, index, state) {
       if (state.liked == false && state.disliked == false) {
@@ -293,6 +305,10 @@ export default {
       if (data.attachement) {
         this.publications[this.publicationEdit.index].attachement = data.attachement
       }
+    },
+    disactivePublication(data){
+      this.publications[this.publicationDelete.index].message = data.message
+      this.publications[this.publicationDelete.index].attachement = data.attachement
     },
     deletePublication() {
       this.publications.splice(this.publicationDelete.index, 1)

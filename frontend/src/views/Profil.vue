@@ -3,7 +3,7 @@
     <Delete
       v-if="showDelete"
       message="profil"
-      v-on:closing-popup-delete="closeDelete($event)"
+      @closing-popup-delete="closeDelete($event)"
     />
     <div v-if="!editProfil" class="profil">
       <div class="profil__wrap">
@@ -23,7 +23,7 @@
             <p class="information__name">Date de naissance :</p>
             <p class="information__value">{{ user.birthday ? reverseDate(user.birthday) : "../../.." }}</p>
           </div>
-          <button v-if="access(user.id)" @click="showEdit" class="editProfil">Modifier le profil</button>
+          <button v-if="User(user.id)" @click="showEdit" class="editProfil">Modifier le profil</button>
         </div>
       </div>
     </div>
@@ -67,7 +67,7 @@
       </ValidationObserver>
     </div>
     <aside>
-      <button v-if="access(user.id)" @click="showDeleted()">Supprimer le profil</button>
+      <button v-if="rules(user.id)" @click="showDeleted()">Supprimer le profil</button>
     </aside>
   </main>
 </template>
@@ -132,18 +132,30 @@ export default {
     },
     displayFile() {
       if (this.image != null) {
-        return this.url = URL.createObjectURL(this.image);
+        return this.url = URL.createObjectURL(this.image)
       }
       return this.user.avatar
     },
-    access(userid) {
+    User(userid) {
       if (localStorage.user) {
-        let user = JSON.parse(localStorage.getItem('user'));
+        let user = JSON.parse(localStorage.getItem('user'))
         if (user.Id === userid) {
           return true
         }
       }
       return false
+    },
+    rules(userId) {
+      let user = JSON.parse(localStorage.getItem('user'))
+      if (user.isAdmin === true && user.Id === userId) {
+        return false
+      }
+      else if (user.isAdmin === true && user.Id !== userId) {
+        return true
+      }
+      else if (user.Id === userId) {
+        return true
+      }
     },
     showEdit() {
       return this.editProfil = true;

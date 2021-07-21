@@ -30,32 +30,56 @@ export default {
   },
   methods: {
     deleted(value) {
+      let user = JSON.parse(localStorage.getItem('user'))
       if (value == 'profil') {
-        UserDataService.delete(this.$route.params.id)
-          .then(
-            UserDataService.logout(),
-            this.$router.push('/connection')
-          )
-          .catch(e => {
-            console.log(e);
-          });
+        if (user.isAdmin === true && user.Id === this.$route.params.id) {
+          alert("Opération interdite !")
+        }
+        else {
+          UserDataService.delete(this.$route.params.id)
+            .then(() => {
+              if (user.isAdmin !== true) {
+                this.$store.dispatch('auth/logout');
+                this.$router.push('/connection')
+              }
+              else {
+                this.$emit('closing-popup-delete', false)
+                this.$router.push('/publications')
+              }
+            })
+            .catch(e => {
+              console.log(e);
+            });
+        }
       }
       else if (value == 'publication') {
         PublicationDataService.delete(this.id)
-          .then(
-            this.$emit('delete-publication'),
-            this.$emit('closing-popup-delete', false)
-          )
+          .then(response => {
+            if (response.data.disactive === true) {
+              this.$emit('disactive-publication', response.data)
+              this.$emit('closing-popup-delete', false)
+            }
+            else {
+              this.$emit('delete-publication')
+              this.$emit('closing-popup-delete', false)
+            }
+          })
           .catch(e => {
             console.log(e);
           });
       }
       else if (value == 'commentaire') {
         CommentDataService.delete(this.id)
-          .then(
-            this.$emit('delete-comment'),
-            this.$emit('closing-popup-delete', false)
-          )
+          .then(response => {
+            if (response.data.disactive === true) {
+              this.$emit('disactive-comment', response.data)
+              this.$emit('closing-popup-delete', false)
+            }
+            else {
+              this.$emit('delete-comment'),
+              this.$emit('closing-popup-delete', false)
+            }
+          })
           .catch(e => {
             console.log(e);
           });
