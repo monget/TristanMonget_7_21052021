@@ -1,11 +1,8 @@
 <template>
-  <main>
-    <Publish
-      v-if="publish"
-      @add-publication="addPublication($event)"
-      @closing-popup-publish="closePublish($event)"
-    />
+  <main role="main" aria-label="main">
     <Edit
+      role="dialog"
+      aria-label="popup modifier la publication"
       v-if="edit"
       :id="publicationEdit.id"
       :message="publicationEdit.message"
@@ -15,6 +12,8 @@
       @closing-popup-edit="closeEdit($event)"
     />
     <Delete
+      role="dialog"
+      aria-label="popup supprimer la publication"
       v-if="deleted"
       message="publication"
       :id="publicationDelete.id"
@@ -23,86 +22,93 @@
       @closing-popup-delete="closeDelete($event)"
     />
     <div class="home" >
-      <button class="publish__button" @click="showPublish()">
-        <img :src="userAvatar">
-        Publiez quelque chose...
+      <button aria-label="Publiez du contenu" class="publish__button" @click="showPublish()">
+        <img alt="Votre avatar" :src="userAvatar">
+        <h1>Publiez quelque chose...</h1>
       </button>
-      <div class="publication">
-        <div class="publication__wrap" v-for="(publication, index) in publications" :key="index">
+      <Publish
+        role="dialog"
+        aria-label="popup ajouter une publication"
+        v-if="publish"
+        @add-publication="addPublication($event)"
+        @closing-popup-publish="closePublish($event)"
+      />
+      <section role="group" aria-label="toutes les publications" class="publication">
+        <article role="article" :aria-label="'publication' + publication.id" class="publication__wrap" v-for="(publication, index) in publications" :key="index">
           <div class="publication__head">
-            <div class="profil">
+            <div aria-label="avatar et nom de l'auteur" class="profil">
               <router-link class="profil__link" :to="'profil/' + publication.userId">
-                <img class="profil__avatar" :src="publication.avatar" :title="publication.publishedBy">
+                <img class="profil__avatar" :src="publication.avatar" :alt="'avatar ' + publication.publishedBy">
                 <span>{{ publication.publishedBy }}</span>
               </router-link>
               <span class="profil__date">.{{ formatDate(publication.createdAt) }}</span>
             </div>
-            <div class="publication__options" v-if="CreatorPublication(publication.userId)">
-              <button v-if="rules(publication.userId)" @click="showEdit(publication.id, publication.message, publication.attachement, index)">
-                <img src="../assets/icons/edit-solid.svg">
+            <div aria-label="options de la publication" class="publication__options" v-if="CreatorPublication(publication.userId)">
+              <button aria-label="modifier la publication" v-if="rules(publication.userId)" @click="showEdit(publication.id, publication.message, publication.attachement, index)">
+                <img alt="modifier" src="../assets/icons/edit-solid.svg">
               </button>
-              <button @click="showDelete(publication.id, index)">
-                <img src="../assets/icons/trash-alt-solid.svg">
+              <button aria-label="supprimer la publication" @click="showDelete(publication.id, index)">
+                <img alt="poubelle" src="../assets/icons/trash-alt-solid.svg">
               </button>
             </div>
           </div>
           <div class="content">
-            <router-link :to="'publication/' + publication.id">
+            <router-link aria-label="contenu de la publication" :to="'publication/' + publication.id">
               <p class="content__message" v-if="publication.message" >
                 {{ publication.message }}
               </p>
-              <img class="content__attachement" v-if="publication.attachement" :src="publication.attachement">
+              <img :alt="'contenu de la publication ' + publication.publishedBy" class="content__attachement" v-if="publication.attachement" :src="publication.attachement">
             </router-link>
-            <div class="content__footer">
+            <div aria-label="likes et commentaires" class="content__footer">
               <div class="like">
-                <div>
-                  <button @click="liked(publication.id, index, publication.stateLike)">
-                    <img v-if="publication.stateLike.liked" src="../assets/icons/thumbs-up-regular-green.svg">
-                    <img v-else src="../assets/icons/thumbs-up-regular.svg">
+                <div aria-label="j'aime">
+                  <button aria-label="bouton j'aime" @click="liked(publication.id, index, publication.stateLike)">
+                    <img alt="pouce j'aime validé" v-if="publication.stateLike.liked" src="../assets/icons/thumbs-up-regular-green.svg">
+                    <img alt="pouce j'aime" v-else src="../assets/icons/thumbs-up-regular.svg">
                   </button>
                   {{ publication.like }}
                 </div>
-                <div>
-                  <button @click="disliked(publication.id, index, publication.stateLike)">
-                    <img v-if="publication.stateLike.disliked" src="../assets/icons/thumbs-down-regular-red.svg">
-                    <img v-else src="../assets/icons/thumbs-down-regular.svg">
+                <div aria-label="je n'aime pas">
+                  <button aria-label="bouton je n'aime pas" @click="disliked(publication.id, index, publication.stateLike)">
+                    <img alt="pouce je n'aime pas validé" v-if="publication.stateLike.disliked" src="../assets/icons/thumbs-down-regular-red.svg">
+                    <img alt="pouce je n'aime pas" v-else src="../assets/icons/thumbs-down-regular.svg">
                   </button>
                   {{ publication.dislike }}
                 </div>
               </div>
-              <div>
-                <img src="../assets/icons/comment-alt-regular.svg">
+              <div aria-label="commentaires">
+                <img alt="logo commentaires" src="../assets/icons/comment-alt-regular.svg">
                 {{ publication.totalComments }} commentaires
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      <div class="onTop">
+        </article>
+      </section>
+      <aside role="complementary" aria-label="publication et contributeur au top" class="onTop">
         <div class="onTop__content">
-          <div class="best">
+          <div aria-label="publication au top" class="best">
             <span>Meilleure publication</span>
             <router-link class="best__detail" :to="'publication/' + topPublication.id">
-              <img class="best__avatar" :src="topPublication.avatar">
+              <img alt="avatar de la meilleure publication" class="best__avatar" :src="topPublication.avatar">
               <div class="best__message"> 
                 {{ topPublication.message }}
               </div>
             </router-link>
           </div>
           <div class="horizontal_line"></div>
-          <div class="best">
+          <div aria-label="contributeur au top" class="best">
             <span>Contributeur au
-              <img class="best__logo" src="../assets/icons/hand-point-up-solid.svg">
+              <img alt="main avec l'index pointé vers le haut" class="best__logo" src="../assets/icons/hand-point-up-solid.svg">
             </span>
             <router-link class="best__detail" :to="'profil/' + topContributor.id">
-              <img class="best__avatar" :src="topContributor.avatar">
+              <img alt="avatar du meilleur contributeur" class="best__avatar" :src="topContributor.avatar">
               <div class="best__message"> 
                 {{ topContributor.name }}
               </div>
             </router-link>
           </div>
         </div>
-      </div>
+      </aside>
     </div>
   </main>
 </template>
@@ -178,7 +184,7 @@ export default {
           this.topContributor = resultat
         })
         .catch(e => {
-          console.log(e);
+          console.log(e)
         });
     },
     formatDate(date) {
@@ -343,6 +349,9 @@ export default {
   src: local("Roboto-Regular"),
   url(../fonts/Roboto-Regular.ttf) format("truetype");
 }
+h1 {
+  font-size: 30px;
+}
 .home {
   padding-left: 120px;
 }
@@ -350,15 +359,16 @@ export default {
   display: flex;
   align-items: center;
   cursor: pointer;
-  margin-top: 50px;
+  margin-top: 30px;
   border: none;
   font-size: 30px;
-  color: black;
+  color: #2d3f5d;
   background-color: #00000000;
   & img {
     object-fit: cover;
     border-radius: 30px;
-    border: 1px solid;
+    border: 2px solid #2d3f5d;
+    background: #2d3f5d;
     width: 50px;
     height: 50px;
     margin-right: 20px;
@@ -373,7 +383,7 @@ export default {
   &__wrap {
     padding: 10px;
     margin-bottom: 20px;
-    background: #909090;
+    background: #2d3f5d;
     border-radius: 15px;
   }
   &__head {
@@ -387,10 +397,12 @@ export default {
     justify-content: space-between;
     & button {
       cursor: pointer;
-      background: #909090;
+      background: #2d3f5d;
       border: none;
       & img {
-        height: 20px;
+        position: relative;
+        top: -25px;
+        height: 25px;
       }
     }
   }
@@ -405,10 +417,10 @@ export default {
   }
   &__avatar {
     object-fit: cover;
-    border-radius: 30px;
+    border-radius: 70px;
     border: 1px solid;
-    width: 50px;
-    height: 50px;
+    width: 80px;
+    height: 80px;
     margin-right: 20px;
     color: black;
   }
@@ -471,14 +483,13 @@ a {
   position: fixed;
   right: 10%;
   top: 48%;
-  width: 346px;
-  border: 2px solid #909090;
-  background-color: white;
+  width: 350px;
+  background-color: #2d3f5d;
   &__content {
     font-family: "Roboto-Regular";
     font-size: 28px;
     margin: 10px 0px;
-    color: #ff7c03;
+    color: white;
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -495,15 +506,16 @@ a {
     margin-top: 10px;
     display: flex;
     align-items: center;
-    background-color: #ff7c03;
+    background-color: white;
   }
   &__avatar {
-    padding: 2%;
-    margin-right: 5px;
+    margin: 5px 10px;
     object-fit: cover;
     border-radius: 30px;
+    border: 1px solid #2d3f5d;
     width: 50px;
     height: 50px;
+    background: #2d3f5d;
   }
   &__message {
     flex: 1;
@@ -511,15 +523,15 @@ a {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: white;
   }
   &__logo {
+    margin-left: 5px;
     width: 25px;
   }
 }
 .horizontal_line {
   margin: 10px;
-  background-color: #909090;
+  background-color: white;
   height: 1px;
 }
 </style>

@@ -1,35 +1,35 @@
 <template>
-  <main>
+  <main role="main" aria-label="main">
     <ValidationObserver ref="form" v-slot="{ handleSubmit }" class="registration-connection_form">
-      <form @submit.prevent="handleSubmit(createUser)" class="registrationForm">
+      <form role="form" aria-label="formulaire d'inscription" @submit.prevent="handleSubmit(createUser)" class="registrationForm">
         <h1>Inscription</h1>
         <p>
-          <ValidationProvider vid="user" name="pseudo" rules="required:@pseudo|min:3|max:12" v-slot="{ errors }">
+          <ValidationProvider aria-label="pseudo" vid="user" name="pseudo" rules="required:@pseudo|min:3|max:12" v-slot="{ errors }">
             <label class="label" for="pseudo">Pseudo :</label>
-            <input id="pseudo" class="input" type="text" name="pseudo" minlength="3" maxlength="12" placeholder="De 3 à 12 caractères" v-model.trim="pseudo"/>
-            <span class="error">{{ errors[0] }}</span>
+            <input id="pseudo" class="input" type="text" name="pseudo" minlength="3" maxlength="12" placeholder="De 3 à 12 caractères" aria-describedby="pseudo_error" aria-required="true" v-model.trim="pseudo"/>
+            <span id="pseudo_error" class="error">{{ errors[0] }}</span>
           </ValidationProvider>
 
-          <ValidationProvider name="mot de passe" rules="required:@mot de passe|min:8|regex" v-slot="{ errors }">
+          <ValidationProvider aria-label="mot de passe" name="mot de passe" rules="required:@mot de passe|min:8|regex" v-slot="{ errors }">
             <label class="label" for="password">Mot de passe :</label>
-            <input class="input" type="password" id="password" name="password" minlength="8" placeholder="Au moins 8 caractères" v-model="password"/>
-            <span class="error">{{ errors[0] }}</span>
+            <input class="input" type="password" id="password" name="password" minlength="8" placeholder="Au moins 8 caractères" aria-describedby="password_error" aria-required="true" v-model="password"/>
+            <span id="password_error" class="error">{{ errors[0] }}</span>
           </ValidationProvider>
 
-          <ValidationProvider name="ConfirmPassword" rules="ifexist:@mot de passe|requiredConfirmPassword|confirm_password:@mot de passe"  v-slot="{ errors }">
+          <ValidationProvider aria-label="confirmer le mot de passe" name="ConfirmPassword" rules="ifexist:@mot de passe|requiredConfirmPassword|confirm_password:@mot de passe"  v-slot="{ errors }">
             <label class="label" for="confirm_password">Confirmez le mot de passe :</label>
-            <input class="input" type="password" id="confirm_password" name="confirm_password"  v-model="confirm_password"/>
-            <span class="error">{{ errors[0] }}</span>
+            <input class="input" type="password" id="confirm_password" name="confirm_password" aria-describedby="confirm_password_error" aria-required="true" v-model="confirm_password"/>
+            <span id="confirm_password_error" class="error">{{ errors[0] }}</span>
           </ValidationProvider>
 
-          <ValidationProvider vid="email" name="email" rules="required:@email|email" v-slot="{ errors }">
+          <ValidationProvider aria-label="email" vid="email" name="email" rules="required:@email|email" v-slot="{ errors }">
             <label class="label" for="email">Adresse email :</label>
-            <input class="input" type="email" id="email" name="email" v-model="email"/>
-            <span class="error">{{ errors[0] }}</span>
+            <input class="input" type="email" id="email" name="email" aria-describedby="email_error" aria-required="true" v-model="email"/>
+            <span id="email_error" class="error">{{ errors[0] }}</span>
           </ValidationProvider>
 
-          <button class="submitForm">Valider</button>
-          <span>Déjà un compte ? <router-link to="/connection">Connectez-vous</router-link></span><br />
+          <button aria-label="valider l'inscription" type="submit" class="submitForm">Valider</button>
+          <span aria-label="déjà un compte">Déjà un compte ? <router-link to="/connection">Connectez-vous</router-link></span>
         </p>
       </form>
     </ValidationObserver>

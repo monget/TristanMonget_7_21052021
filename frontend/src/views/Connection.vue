@@ -1,23 +1,23 @@
 <template>
-  <main>
+  <main role="main" aria-label="main">
     <ValidationObserver v-slot="{ handleSubmit }" class="registration-connection_form">
-      <form @submit.prevent="handleSubmit(logUser)" class="connectionForm">
+      <form role="form" aria-label="formulaire de connection" @submit.prevent="handleSubmit(logUser)" class="connectionForm">
         <h1>Connection</h1>
           <p>
-            <ValidationProvider vid="pseudo" name="pseudo" rules="required:@pseudo" v-slot="{ errors }">
+            <ValidationProvider aria-label="pseudo" vid="pseudo" name="pseudo" rules="required:@pseudo" v-slot="{ errors }">
               <label class="label" for="pseudo">Pseudo :</label>
-              <input class="input" type="text" id="pseudo" name="pseudo" v-model.trim="pseudo"/>
-              <span>{{ errors[0] }}</span>
+              <input class="input" type="text" id="pseudo" name="pseudo" aria-describedby="pseudo_error" aria-required="true" v-model.trim="pseudo"/>
+              <span id="pseudo_error">{{ errors[0] }}</span>
             </ValidationProvider>
 
-            <ValidationProvider ref="error" vid="mot de passe" name="mot de passe" rules="required:@mot de passe" v-slot="{ errors }">
+            <ValidationProvider aria-label="mot de passe" ref="error" vid="mot de passe" name="mot de passe" rules="required:@mot de passe" v-slot="{ errors }">
               <label class="label" for="mot de passe">Mot de passe :</label>
-              <input class="input" type="password" id="mot de passe" name="mot de passe" v-model="password"/>
-              <span>{{ errors[0] }}</span>
+              <input class="input" type="password" id="mot de passe" name="mot de passe" aria-describedby="password_error" aria-required="true" v-model="password"/>
+              <span id="password_error">{{ errors[0] }}</span>
             </ValidationProvider>
 
-            <button class="submitForm">Valider</button>
-            <span>Pas encore de compte ? <router-link to="/registration">Inscrivez-vous</router-link></span>
+            <button aria-label="se connecter" type="submit" class="submitForm">Valider</button>
+            <span aria-label="pas encore de compte">Pas encore de compte ? <router-link to="/registration">Inscrivez-vous</router-link></span>
           </p>
       </form>
     </ValidationObserver>

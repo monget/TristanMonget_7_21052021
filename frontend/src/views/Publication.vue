@@ -1,6 +1,8 @@
 <template>
-  <main>
+  <main role="main" aria-label="main">
     <Edit
+      role="dialog"
+      aria-label="popup modifier un commentaire"
       v-if="commentEdit.popup"
       :id="commentEdit.id"
       :message="commentEdit.message"
@@ -10,6 +12,8 @@
       @closing-popup-edit="closeEdit($event)"
     />
     <Delete
+      role="dialog"
+      aria-label="popup supprimer un commentaire"
       v-if="commentDelete.popup"
       message="commentaire"
       :id="commentDelete.id"
@@ -19,74 +23,89 @@
     />
     <div class="home">
       <div class="publication">
-        <div class="publication__wrap">
+        <article role="article" :aria-label="'publication' + publication.id" class="publication__wrap">
           <div class="publication__head">
-            <div class="profil">
+            <div aria-label="avatar et nom de l'auteur" class="profil">
               <router-link class="profil__link" :to="'../profil/' + publication.userId">
-                <img class="profil__avatar" :src="publication.avatar" :title="publication.publishedBy">
+                <img class="profil__avatar" :src="publication.avatar" :alt="'avatar ' + publication.publishedBy">
                 <span>{{ publication.publishedBy }}</span>
               </router-link>
               <span class="profil__date">.{{ formatDate(createdAt) }}</span>
             </div>
-            <button class="publication__close" @click="close()">
-              <img src="../assets/icons/times-solid.svg">
+            <button aria-label="fermer la publication" class="publication__close" @click="close()">
+              <img alt="croix" src="../assets/icons/times-solid.svg">
             </button>
           </div>
           <div class="content">
-            <p class="content__message" v-if="publication.message">
-              {{ publication.message }}
-            </p>
-            <img class="content__attachement" v-if="publication.attachement" :src="publication.attachement">
-            <div class="content__footer">
+            <div aria-label="contenu de la publication">
+              <p class="content__message" v-if="publication.message">
+                {{ publication.message }}
+              </p>
+              <img :alt="'contenu de la publication ' + publication.publishedBy" class="content__attachement" v-if="publication.attachement" :src="publication.attachement">
+            </div>
+            <div aria-label="likes et commentaires" class="content__footer">
               <div class="like">
-                <div>
-                  <button @click="liked(publication.id, state)">
-                    <img v-if="state.liked" src="../assets/icons/thumbs-up-regular-green.svg">
-                    <img v-else src="../assets/icons/thumbs-up-regular.svg">
+                <div aria-label="j'aime">
+                  <button aria-label="bouton j'aime" @click="liked(publication.id, state)">
+                    <img alt="pouce j'aime validé" v-if="state.liked" src="../assets/icons/thumbs-up-regular-green.svg">
+                    <img alt="pouce j'aime" v-else src="../assets/icons/thumbs-up-regular.svg">
                   </button>
                   {{ publication.like }}
                 </div>
-                <div>
-                  <button @click="disliked(publication.id, state)">
-                    <img v-if="state.disliked" src="../assets/icons/thumbs-down-regular-red.svg">
-                    <img v-else src="../assets/icons/thumbs-down-regular.svg">
+                <div aria-label="je n'aime pas">
+                  <button aria-label="bouton je n'aime pas" @click="disliked(publication.id, state)">
+                    <img alt="pouce je n'aime pas validé" v-if="state.disliked" src="../assets/icons/thumbs-down-regular-red.svg">
+                    <img alt="pouce je n'aime pas" v-else src="../assets/icons/thumbs-down-regular.svg">
                   </button>
                   {{ publication.dislike }}
                 </div>
               </div>
-              <div>
-                <img src="../assets/icons/comment-alt-regular.svg">
+              <div aria-label="commentaires">
+                <img alt="logo commentaires" src="../assets/icons/comment-alt-regular.svg">
                 {{ publication.totalComments }} commentaires
               </div>
             </div>
           </div>
-        </div>
-        <div>
-          <ValidationObserver v-slot="{ handleSubmit }">
-            <form class="form" @submit.prevent="handleSubmit(postComment)">
-              <div class="form__wrap">
-                <ValidationProvider ref="error" vid="comment" name="comment" v-slot="{ errors }">
-                  <textarea class="content__textarea" type="text" id="comment" name="comment" @input="resize" placeholder="Votre commentaire..." v-model="message"/>
-                  <span class="content__error">{{ errors[0] }}</span>
-                </ValidationProvider>
-                <img class="content__attachement" :src="displayFile()" v-if="image"/>
-                <div class="footer__wrap">
-                  <div class="add_file">
-                    <label for="file">Ajouter<img src="../assets/icons/file-image-regular.svg"></label>
-                    <input @change="fileSelected" type="file" name="file" id="file" class="inputfile" />
-                  </div>
-                  <div><button class="validate"><img src="../assets/icons/paper-plane-regular.svg"></button></div>
-                </div>
-              </div>
-            </form>
-          </ValidationObserver>
-        </div>
+        </article>
         <Comments
           v-if="publication.comments"
           :comments="publication.comments"
           @comment-delete="commentDeleteData($event)"
           @comment-edit="commentEditData($event)"
         />
+        <button aria-label="Commenter" class="commented__button" @click="showPublishComment()">
+          <p>Commenter</p>
+        </button>
+        <div v-if="publishComment">
+          <FocusLoop :is-visible="activeTrap">
+            <button aria-label="fermer" @click="showPublishComment()"></button>
+            <ValidationObserver v-slot="{ handleSubmit }">
+              <form role="form" aria-label="formulaire pour ajouter un commentaire" class="form" @submit.prevent="handleSubmit(postComment)">
+                <div class="form__wrap">
+                  <ValidationProvider ref="error" vid="comment" name="comment" v-slot="{ errors }">
+                    <label class="hiddelabel" for="comment">commentaire</label>
+                    <textarea aria-label="votre commentaire" class="content__textarea" title="commentaire" type="text" id="comment" name="comment" @input="resize" placeholder="Votre commentaire..." v-model="message"/>
+                    <span class="content__error">{{ errors[0] }}</span>
+                  </ValidationProvider>
+                  <img class="content__attachement" alt="fichier ajouté" :src="displayFile()" v-if="image"/>
+                  <div class="footer__wrap">
+                    <div aria-label="Choisir un fichier à ajouter" class="add_file">
+                      <label for="file"> {{ image ? 'Modifier' : 'Ajouter' }}
+                        <img alt="fichier image bleu" src="../assets/icons/file-image-regular.svg">
+                      </label>
+                      <input @change="fileSelected" type="file" name="file" id="file" class="inputfile" />
+                    </div>
+                    <div aria-label="Publier mon commentaire">
+                      <button type="submit" class="validate">
+                        <img alt="avion en papier vert" src="../assets/icons/paper-plane-regular.svg">
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </ValidationObserver>
+          </FocusLoop>
+        </div>
       </div>
     </div>
   </main>
@@ -98,6 +117,7 @@ import CommentDataService from "../services/CommentDataService"
 import Comments from '@/components/Comments.vue'
 import Edit from '@/components/Edit.vue'
 import Delete from '@/components/Delete.vue'
+import { FocusLoop } from '@vue-a11y/focus-loop'
 import { formatDistance, subDays } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -106,7 +126,8 @@ export default {
   components: {
     Comments,
     Edit,
-    Delete
+    Delete,
+    FocusLoop
   },
   data() {
     return {
@@ -119,7 +140,9 @@ export default {
       message: "",
       image: null,
       commentEdit: {},
-      commentDelete: {}
+      commentDelete: {},
+      publishComment: false,
+      activeTrap: false
     };
   },
   beforeMount() {
@@ -142,6 +165,9 @@ export default {
           }
         })
         .catch(e => {
+          if (e.response.status === 404) {
+            this.$router.push('/404')
+          }
           console.log(e);
         });
     },
@@ -242,6 +268,16 @@ export default {
           });
       }
     },
+    showPublishComment() {
+      if (this.publishComment === false) {
+        this.publishComment = true
+        this.activeTrap = true
+      }
+      else {
+        this.publishComment = false
+        this.activeTrap = false
+      }
+    },
     postComment() {
       const data = new FormData();
       if (this.image != null) {
@@ -254,6 +290,8 @@ export default {
           this.message = ""
           this.image = null
           this.publication.comments.push(response.data)
+          this.publication.totalComments += 1
+          this.publishComment = false
         })
         .catch(e => {
           this.$refs.error.setErrors([e.response.data.message])
@@ -285,6 +323,7 @@ export default {
     },
     deleteComment() {
       this.publication.comments.splice(this.commentDelete.index, 1)
+      this.publication.totalComments -= 1
     },
     closeEdit(condition) {
       return this.commentEdit.popup = condition;
@@ -305,6 +344,9 @@ export default {
   src: local("Roboto-Regular"),
   url(../fonts/Roboto-Regular.ttf) format("truetype");
 }
+.hiddelabel {
+  display: none;
+}
 .home {
   padding-left: 120px;
 }
@@ -316,7 +358,7 @@ export default {
   width: 55%;
   &__wrap {
     padding: 10px;
-    background: #909090;
+    background: #2d3f5d;
     border-radius: 16px;
   }
   &__head {
@@ -330,10 +372,12 @@ export default {
   }
   &__close {
     cursor: pointer;
-    background: #909090;
+    background: #2d3f5d;
     border: none;
     & img {
       width: 30px;
+      position: relative;
+      top: -25px;
     }
   }
 }
@@ -348,10 +392,10 @@ export default {
   }
   &__avatar {
     object-fit: cover;
-    border-radius: 30px;
+    border-radius: 70px;
     border: 1px solid;
-    width: 50px;
-    height: 50px;
+    width: 80px;
+    height: 80px;
     margin-right: 20px;
     color: black;
   }
@@ -456,7 +500,8 @@ a {
     }
   }
   & input {
-    display: none;
+    position: absolute;
+    left: -99999rem;
   }
 }
 .validate {

@@ -1,22 +1,20 @@
 <template>
-  <div>
-    <head class="head">
-      <div class="logo">
-        <router-link to="/publications">
-          <img alt="Groupomania logo" src="../assets/icon-left-font-monochrome-black.svg">
-        </router-link>
-      </div>
-      <div class="buttons" v-if="logged">
-        <router-link v-if="!profil" :to="`/profil/${id()}`">Profil</router-link>
-        <router-link v-else to="/publications">Accueil</router-link>
-        <a href @click="logOut">Déconnection</a>
-      </div>
-      <div class="buttons" v-else>
-        <router-link to="/registration">Inscription</router-link>
-        <router-link to="/connection">Connection</router-link>
-      </div>
-    </head>
-  </div>
+  <header role="banner" aria-label="header" class="header">
+    <div role="navigation" aria-label="menu principal" class="logo">
+      <router-link to="/publications">
+        <img alt="logo Groupomania" src="../assets/icon-left-font-monochrome-white.svg">
+      </router-link>
+    </div>
+    <div role="navigation" aria-label="menu de navigation" class="buttons" v-if="logged">
+      <router-link v-if="!profil" :to="`/profil/${id()}`">Profil</router-link>
+      <router-link v-else to="/publications">Accueil</router-link>
+      <a href @click="logOut">Déconnection</a>
+    </div>
+    <div role="navigation" aria-label="menu de navigation" class="buttons" v-else>
+      <router-link to="/registration">Inscription</router-link>
+      <router-link to="/connection">Connection</router-link>
+    </div>
+  </header>
 </template>
 
 <script>
@@ -60,12 +58,12 @@ export default {
 </script>
 
 <style lang="scss">
-.head {
+.header {
   padding-left: 5px;
   display: flex;
   align-items: center;
-  border: 1px solid grey;
-  background-color: grey;
+  border: 1px solid #2d3f5d;
+  background-color: #2d3f5d;
   justify-content: space-between;
   & .logo {
     width: 30%;

@@ -1,72 +1,74 @@
 <template>
-  <main>
+  <main role="main" aria-label="main">
     <Delete
+      role="dialog"
+      aria-label="popup supprimer le profil"
       v-if="showDelete"
       message="profil"
       @closing-popup-delete="closeDelete($event)"
     />
-    <div v-if="!editProfil" class="profil">
+    <div role="article" aria-label="profil" v-if="!editProfil" class="profil">
       <div class="profil__wrap">
         <div>
-          <img class="avatar" :src="displayFile()">
+          <img class="avatar" :alt="'avatar ' + user.pseudo" :src="displayFile()">
         </div>
-        <div class="information">
-          <div class=information__content>
+        <div aria-label="information sur le profil" class="information">
+          <div aria-label="pseudo" class=information__content>
             <p class="information__name">Pseudo :</p>
             <p class="information__value">{{ user.pseudo }}</p>
           </div>
-          <div class=information__content>
+          <div aria-label="email" class=information__content>
             <p class="information__name">Email :</p>
             <a class="information__value information__value--color" :href="`mailto:${user.email}`">{{ user.email }}</a>
           </div>
-          <div class=information__content>
+          <div aria-label="date de naissance" class=information__content>
             <p class="information__name">Date de naissance :</p>
             <p class="information__value">{{ user.birthday ? reverseDate(user.birthday) : "../../.." }}</p>
           </div>
-          <button v-if="User(user.id)" @click="showEdit" class="editProfil">Modifier le profil</button>
         </div>
+        <button aria-label="modifier le profil" v-if="User(user.id)" @click="showEdit" class="editProfil">Modifier le profil</button>
       </div>
     </div>
     <div v-else class="profil">
       <ValidationObserver ref="form" v-slot="{ handleSubmit }">
-        <form @submit.prevent="handleSubmit(postProfil)">
+        <form role="form" aria-label="formulaire du profil" @submit.prevent="handleSubmit(postProfil)">
           <div class="profil__wrap">
-            <div class="change__avatar">
-              <img :src="displayFile()">
-              <label for="file">Modifier</label>
-              <input @change="fileSelected" type="file" name="file" id="file" class="inputfile" />
+            <div aria-label="Choisir un avatar" class="change__avatar">
+              <img :alt="'avatar ' + user.pseudo" :src="displayFile()">
+              <label aria-label="modifier l'avatar" for="file"> {{ user.avatar || image ? 'Modifier' : 'Ajouter' }} </label>
+              <input @change="fileSelected" type="file" name="file" id="file" class="inputfile"/>
             </div>
             <div class="information">
-              <div class="information__wrap">
+              <div aria-label="information sur le profil" class="information__wrap">
                 <ValidationProvider vid="user" name="pseudo" rules="required:@pseudo|min:3|max:12" v-slot="{ errors }">
-                  <div class="information__content">
+                  <div aria-label="changer le pseudo" class="information__content">
                     <label class="information__name" for="pseudo">Pseudo :</label>
-                    <input class="information__value" name="pseudo" v-model="user.pseudo" />
+                    <input class="information__value" name="pseudo" id="pseudo" aria-describedby="pseudo_error" aria-required="true" v-model="user.pseudo"/>
                   </div>
-                  <span class="error">{{ errors[0] }}</span>              
+                  <span aria-label="indique si il y une erreur" id="pseudo_error" class="error">{{ errors[0] }}</span>              
                 </ValidationProvider>
                 <ValidationProvider vid="email" name="email" rules="required:@email|email" v-slot="{ errors }">
-                  <div class="information__content">
+                  <div aria-label="changer l'email" class="information__content">
                     <label class="information__name" for="email">Email :</label>
-                    <input class="information__value" type="email" name="email" v-model="user.email" />
+                    <input class="information__value" type="email" name="email" id="email" aria-describedby="email_error" aria-required="true" v-model="user.email"/>
                   </div>
-                  <span class="error">{{ errors[0] }}</span>              
+                  <span aria-label="indique si il y une erreur" id="email_error" class="error">{{ errors[0] }}</span>              
                 </ValidationProvider>
                 <ValidationProvider vid="birthday" name="birthday" v-slot="{ errors }">
-                  <div class="information__content">
+                  <div aria-label="ajouter ou modifier la date de naissance" class="information__content">
                     <label class="information__name" for="birthday">Date de naissance :</label>
-                    <input class="information__value" type="date" min="1950-01-01" max="2005-01-01" v-model="user.birthday"/>
+                    <input class="information__value" type="date" id="birthday" min="1950-01-01" max="2005-01-01" aria-describedby="birthday_error" v-model="user.birthday"/>
                   </div>
-                  <span class="error">{{ errors[0] }}</span>              
+                  <span aria-label="indique si il y une erreur" id="birthday_error" class="error">{{ errors[0] }}</span>              
                 </ValidationProvider>
               </div>
-              <button class="editProfil">Valider</button>
+              <button aria-label="valider les modifications" type="submit" class="editProfil">Valider</button>
             </div>
           </div>
         </form>
-      </ValidationObserver>
+      </ValidationObserver>    
     </div>
-    <aside>
+    <aside role="complementary" aria-label="supprimer le profil">
       <button v-if="rules(user.id)" @click="showDeleted()">Supprimer le profil</button>
     </aside>
   </main>
@@ -104,6 +106,9 @@ export default {
           this.user = response.data
         })
         .catch(e => {
+          if (e.response.status === 404) {
+            this.$router.push('/404')
+          }
           console.log(e);
         });
     },
@@ -120,7 +125,6 @@ export default {
       UserDataService.update(this.user.id, data)
         .then( this.editProfil = false )
         .catch(e => {
-          console.log(e.response)
           this.$refs.form.setErrors(e.response.data)
         });
     },
@@ -195,7 +199,8 @@ export default {
     cursor: pointer;
   }
   & input {
-    display: none;
+    position: absolute;
+    left: -99999rem;
   }
 }
 .profil {
@@ -216,7 +221,8 @@ export default {
   display: flex;
   object-fit: cover;
   border-radius: 100px;
-  border: 1px solid;
+  border: 1px solid #2d3f5d;
+  background-color: #2d3f5d;
   width: 150px;
   height: 150px;
   margin: 2% 0 0 auto;
@@ -257,7 +263,7 @@ export default {
   margin: 50px auto;
   font-weight: bold;
   color: white;
-  background-color: #3B47B2;
+  background-color: #2d3f5d;
 }
 .error {
   color: red;
