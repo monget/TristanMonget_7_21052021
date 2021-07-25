@@ -83,19 +83,26 @@ exports.delete = (req, res, next) => {
 					fs.unlinkSync(`images/comments/${filename}`)
 				}
 				if (isAdmin(req) === true) {
-					Comment.update({
-						message: "Ce contenu n'est plus disponible.",
-						attachement: null
-						},
-						{ where: { id: req.params.id }
-					})
-						.then(() => res.status(200).json({
+					if (comment.userId == userId(req)) {
+						Comment.destroy({	where: { id: req.params.id }})
+						.then(() => res.status(200).json({ message: 'Commentaire supprimé !' }))
+						.catch(err => res.status(400).send({ message: err.message }));
+					}
+					else {
+						Comment.update({
 							message: "Ce contenu n'est plus disponible.",
-							attachement: null,
-							disactive: true
-							}
-						))
-						.catch(err => res.status(400).json({ message: err.message }));
+							attachement: null
+							},
+							{ where: { id: req.params.id }
+						})
+							.then(() => res.status(200).json({
+								message: "Ce contenu n'est plus disponible.",
+								attachement: null,
+								disactive: true
+								}
+							))
+							.catch(err => res.status(400).json({ message: err.message }));
+					}
 				}
 				else {
 					Comment.destroy({	where: { id: req.params.id }})
