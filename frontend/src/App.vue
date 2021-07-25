@@ -15,6 +15,10 @@ export default {
   components: {
     Header,
     FooterAside
+  },
+  created() {
+    const html = document.documentElement // returns the html tag
+    html.setAttribute('lang', 'fr')
   }
 }
 </script>
