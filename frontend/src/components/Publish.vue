@@ -1,40 +1,54 @@
 <template>
   <div class="background">
-    <div>
-      <button class="close" @click="close()">
-            <img src="../assets/icons/times-solid.svg">
-      </button>
-      <ValidationObserver v-slot="{ handleSubmit }">
-        <form @submit.prevent="handleSubmit(postPublication)" class="form">
-          <div class="form__wrap">
-            <ValidationProvider ref="error" vid="comment" name="comment" v-slot="{ errors }">
-              <textarea class="content__textarea" type="text" id="comment" name="comment" v-model="message"/>
-              <span class="content__error">{{ errors[0] }}</span>
-            </ValidationProvider>
-            <img class="content__attachement" :src="displayFile()" v-if="image"/>
-            <div class="footer__wrap">
-              <div class="add_file">
-                <label for="file">Ajouter<img src="../assets/icons/file-image-regular.svg"></label>
-                <input @change="fileSelected" type="file" name="file" id="file" class="inputfile" />
+    <FocusLoop :is-visible="activeTrap">
+      <div aria-label="popup de publication">
+        <button aria-label="fermer le popup" class="close" @click="close()">
+            <img alt="croix" src="../assets/icons/times-solid.svg">
+        </button>
+        <ValidationObserver v-slot="{ handleSubmit }">
+          <form role="form" aria-label="formulaire de publication" @submit.prevent="handleSubmit(postPublication)" class="form">
+            <div class="form__wrap">
+              <ValidationProvider ref="error" vid="comment" name="comment" v-slot="{ errors }">
+                <label class="hiddelabel" for="comment">commentaire</label>
+                <textarea aria-label="votre message" class="content__textarea" type="text" id="comment" name="comment" aria-describedby="error" v-model="message"/>
+                <span aria-label="affichage des erreurs si la publication est vide" id="error" class="content__error">{{ errors[0] }}</span>
+              </ValidationProvider>
+              <img class="content__attachement" alt="fichier ajouté" :src="displayFile()" v-if="image"/>
+              <div class="footer__wrap">
+                <div aria-label="Choisir un fichier" class="add_file">
+                  <label for="file"> {{ image ? 'Modifier' : 'Ajouter' }}
+                    <img alt="fichier image bleu" src="../assets/icons/file-image-regular.svg">
+                  </label>
+                  <input @change="fileSelected" type="file" name="file" id="file" class="inputfile" />
+                </div>
+                <div aria-label="Valider la publication">
+                  <button type="submit" class="validate">
+                    <img alt="avion en papier vert" src="../assets/icons/paper-plane-regular.svg">
+                  </button>
+                </div>
               </div>
-              <div><button class="validate"><img src="../assets/icons/paper-plane-regular.svg"></button></div>
             </div>
-          </div>
-        </form>
-      </ValidationObserver>
-    </div>
+          </form>
+        </ValidationObserver>
+      </div>
+    </FocusLoop>
   </div>
 </template>
 
 <script>
-import PublicationDataService from "../services/PublicationDataService";
+import PublicationDataService from "../services/PublicationDataService"
+import { FocusLoop } from '@vue-a11y/focus-loop'
 
 export default {
   name: 'Publish',
+  components: {
+    FocusLoop
+  },
   data() {
     return {
       message: "",
-      image: null
+      image: null,
+      activeTrap: true
     };
   },
   methods: {
@@ -46,10 +60,8 @@ export default {
       data.append('message', this.message)
       PublicationDataService.create(data)
         .then(response => {
-          if (response) {
-            this.$emit('add-publication', response.data)
-            this.$emit('closing-popup-publish', false)
-          }
+          this.$emit('add-publication', response.data)
+          this.$emit('closing-popup-publish', false)
         })
         .catch(e => {
           this.$refs.error.setErrors([e.response.data.message])
@@ -59,7 +71,6 @@ export default {
       this.image = event.target.files[0]
     },
     displayFile() {
-      console.log("test")
       if (this.image != null) {
         return this.url = URL.createObjectURL(this.image);
       }
@@ -77,10 +88,14 @@ export default {
   src: local("Roboto-Regular"),
   url(../fonts/Roboto-Regular.ttf) format("truetype");
 }
+.hiddelabel {
+  display: none;
+}
 .background {
   position: fixed;
   z-index: 999;
-  top: 0px;
+  top: 0;
+  left: 0;
   display: grid;
   align-items: center;
   width: 100%;
@@ -164,7 +179,8 @@ export default {
     }
   }
   & input {
-    display: none;
+    position: absolute;
+    left: -99999rem;
   }
 }
 .validate {

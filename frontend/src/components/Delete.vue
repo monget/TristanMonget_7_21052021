@@ -1,19 +1,21 @@
 <template>
   <div class="background">
-      <div @submit.prevent="handleSubmit(postPublication)" class="delete">
-        <div class="delete__title">
+    <FocusLoop :is-visible="activeTrap">
+      <div aria-label="popup de suppression" @submit.prevent="handleSubmit(postPublication)" class="delete">
+        <div aria-label="opération définitive" class="delete__title">
           Cette opération est définitive !
         </div>
         <p class="delete__message">Vous confirmez la suppresion de votre {{ message }} ?</p>
         <div class="delete__footer">
-          <button @click="close()">
-            <img src="../assets/icons/times-solid-red.svg">
+          <button aria-label="fermer la fenêtre de suppression" @click="close()">
+            <img alt="croix" src="../assets/icons/times-solid-red.svg">
           </button>
-          <button @click="deleted(message)">
-            <img src="../assets/icons/check-solid.svg">
+          <button aria-label="valider la suppression" @click="deleted(message)">
+            <img alt="coche valider verte" src="../assets/icons/check-solid.svg">
           </button>
         </div>
       </div>
+    </FocusLoop>
   </div>
 </template>
 
@@ -21,12 +23,21 @@
 import UserDataService from "../services/UserDataService";
 import PublicationDataService from "../services/PublicationDataService";
 import CommentDataService from "../services/CommentDataService";
+import { FocusLoop } from '@vue-a11y/focus-loop'
 
 export default {
   name: 'Publish',
+  components: {
+    FocusLoop
+  },
   props: {
     id: Number,
     message: String
+  },
+  data() {
+    return {
+      activeTrap: true
+    }
   },
   methods: {
     deleted(value) {
@@ -102,7 +113,8 @@ export default {
 .background {
   position: fixed;
   z-index: 999;
-  top: 0px;
+  top: 0;
+  left: 0;
   display: grid;
   align-items: center;
   width: 100%;
