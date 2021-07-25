@@ -39,6 +39,15 @@ const routes = [
     path: '/about',
     name: 'About',
     component: () => import('../views/About.vue')
+  },
+  {
+    path: '/404',
+    name: '404',
+    component: () => import('../components/PageNotFound.vue')
+  },
+  {
+    path: '*',
+    redirect: '404'
   }
 ]
 
@@ -48,7 +57,7 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const publicPages = ['/registration', '/connection', '/'];
+  const publicPages = ['/registration', '/connection', '/', '/about'];
   const authRequired = !publicPages.includes(to.path);
   const loggedIn = localStorage.getItem('user');
 
