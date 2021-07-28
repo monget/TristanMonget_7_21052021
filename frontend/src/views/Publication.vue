@@ -1,5 +1,5 @@
 <template>
-  <main role="main" aria-label="main">
+  <main class="main" role="main" aria-label="main">
     <Edit
       role="dialog"
       aria-label="popup modifier un commentaire"
@@ -23,37 +23,37 @@
     />
     <div class="home">
       <div class="publication">
-        <article role="article" :aria-label="'publication' + publication.id" class="publication__wrap">
-          <div class="publication__head">
-            <div aria-label="avatar et nom de l'auteur" class="profil">
-              <router-link class="profil__link" :to="'../profil/' + publication.userId">
-                <img class="profil__avatar" :src="publication.avatar" :alt="'avatar ' + publication.publishedBy">
+        <article class="publication-display" role="article" :aria-label="'publication' + publication.id">
+          <div class="publication-head">
+            <div class="publication-profil" aria-label="avatar et nom de l'auteur">
+              <router-link class="publication-profil__link" :to="'../profil/' + publication.userId">
+                <img class="publication-profil__avatar" :src="publication.avatar" :alt="'avatar ' + publication.publishedBy">
                 <span>{{ publication.publishedBy }}</span>
               </router-link>
-              <span class="profil__date">.{{ formatDate(createdAt) }}</span>
+              <span class="publication-date">.{{ formatDate(createdAt) }}</span>
             </div>
-            <button aria-label="fermer la publication" class="publication__close" @click="close()">
-              <img alt="croix" src="../assets/icons/times-solid.svg">
+            <button class="publication-close" aria-label="fermer la publication" @click="close()">
+              <img class="publication-close__img" alt="croix" src="../assets/icons/times-solid.svg">
             </button>
           </div>
-          <div class="content">
+          <div class="publication-content">
             <div aria-label="contenu de la publication">
-              <p class="content__message" v-if="publication.message">
+              <p class="publication-content__message" v-if="publication.message">
                 {{ publication.message }}
               </p>
-              <img :alt="'contenu de la publication ' + publication.publishedBy" class="content__attachement" v-if="publication.attachement" :src="publication.attachement">
+              <img class="publication-content__attachement" :alt="'contenu de la publication ' + publication.publishedBy" v-if="publication.attachement" :src="publication.attachement">
             </div>
-            <div aria-label="likes et commentaires" class="content__footer">
-              <div class="like">
+            <div class="publication-footer" aria-label="likes et commentaires">
+              <div class="publication-like">
                 <div aria-label="j'aime">
-                  <button aria-label="bouton j'aime" @click="liked(publication.id, state)">
+                  <button class="publication-like__btn" aria-label="bouton j'aime" @click="liked(publication.id, state)">
                     <img alt="pouce j'aime validé" v-if="state.liked" src="../assets/icons/thumbs-up-regular-green.svg">
                     <img alt="pouce j'aime" v-else src="../assets/icons/thumbs-up-regular.svg">
                   </button>
                   {{ publication.like }}
                 </div>
                 <div aria-label="je n'aime pas">
-                  <button aria-label="bouton je n'aime pas" @click="disliked(publication.id, state)">
+                  <button class="publication-like__btn" aria-label="bouton je n'aime pas" @click="disliked(publication.id, state)">
                     <img alt="pouce je n'aime pas validé" v-if="state.disliked" src="../assets/icons/thumbs-down-regular-red.svg">
                     <img alt="pouce je n'aime pas" v-else src="../assets/icons/thumbs-down-regular.svg">
                   </button>
@@ -73,31 +73,33 @@
           @comment-delete="commentDeleteData($event)"
           @comment-edit="commentEditData($event)"
         />
-        <button aria-label="Commenter" class="commented__button" @click="showPublishComment()">
-          <p>Commenter</p>
+        <div class="respond">
+        <button aria-label="bouton pour répondre" class="respond__btn" @click="showPublishComment()">
+          Répondre
         </button>
+        </div>
         <div v-if="publishComment">
           <FocusLoop :is-visible="activeTrap">
-            <button aria-label="fermer" @click="showPublishComment()"></button>
+            <button class="form-btn-close" aria-label="fermer" @click="showPublishComment()"></button>
             <ValidationObserver v-slot="{ handleSubmit }">
-              <form role="form" aria-label="formulaire pour ajouter un commentaire" class="form" @submit.prevent="handleSubmit(postComment)">
-                <div class="form__wrap">
+              <form class="form-comment-wrap" role="form" aria-label="formulaire pour ajouter un commentaire" @submit.prevent="handleSubmit(postComment)">
+                <div class="form-comment-display">
                   <ValidationProvider ref="error" vid="comment" name="comment" v-slot="{ errors }">
-                    <label class="hiddelabel" for="comment">commentaire</label>
-                    <textarea aria-label="votre commentaire" class="content__textarea" title="commentaire" type="text" id="comment" name="comment" @input="resize" placeholder="Votre commentaire..." v-model="message"/>
-                    <span class="content__error">{{ errors[0] }}</span>
+                    <label class="form-comment-display__hidde-label" for="comment">commentaire</label>
+                    <textarea class="form-comment-display__textarea" aria-label="votre commentaire" title="commentaire" type="text" id="comment" name="comment" @input="resize" placeholder="Votre commentaire..." v-model="message"/>
+                    <span class="form-comment-display__error">{{ errors[0] }}</span>
                   </ValidationProvider>
-                  <img class="content__attachement" alt="fichier ajouté" :src="displayFile()" v-if="image"/>
-                  <div class="footer__wrap">
-                    <div aria-label="Choisir un fichier à ajouter" class="add_file">
-                      <label for="file"> {{ image ? 'Modifier' : 'Ajouter' }}
-                        <img alt="fichier image bleu" src="../assets/icons/file-image-regular.svg">
+                  <img class="form-comment-display__attachement" alt="fichier ajouté" :src="displayFile()" v-if="image"/>
+                  <div class="form-comment-footer">
+                    <div class="form-comment-add-file" aria-label="Choisir un fichier à ajouter">
+                      <label class="form-comment-add-file__label" for="file"> {{ image ? 'Modifier' : 'Ajouter' }}
+                        <img class="form-comment-add-file__img" alt="fichier image bleu" src="../assets/icons/file-image-regular.svg">
                       </label>
-                      <input @change="fileSelected" type="file" name="file" id="file" class="inputfile" />
+                      <input class="form-comment-add-file__input" @change="fileSelected" type="file" name="file" id="file"/>
                     </div>
                     <div aria-label="Publier mon commentaire">
-                      <button type="submit" class="validate">
-                        <img alt="avion en papier vert" src="../assets/icons/paper-plane-regular.svg">
+                      <button class="form-comment-validate" type="submit">
+                        <img class="form-comment-validate__img" alt="avion en papier vert" src="../assets/icons/paper-plane-regular.svg">
                       </button>
                     </div>
                   </div>
@@ -165,9 +167,6 @@ export default {
           }
         })
         .catch(e => {
-          if (e.response.status === 404) {
-            this.$router.push('/404')
-          }
           console.log(e);
         });
     },
@@ -175,7 +174,7 @@ export default {
       return formatDistance(subDays(new Date(date), 0), new Date(), { locale: fr })
     },
     resize(event) {
-      event.target.style.height = "45px";
+      event.target.style.height = "initial";
       event.target.style.height = `${event.target.scrollHeight}px`;
     },
     liked(id, state) {
@@ -338,14 +337,12 @@ export default {
 }
 </script>
 
+
 <style lang="scss" scoped>
 @font-face {
   font-family: "Roboto-Regular";
   src: local("Roboto-Regular"),
   url(../fonts/Roboto-Regular.ttf) format("truetype");
-}
-.hiddelabel {
-  display: none;
 }
 .home {
   padding-left: 120px;
@@ -356,33 +353,18 @@ export default {
   padding-top: 50px;
   padding-bottom: 50px;
   width: 55%;
-  &__wrap {
-    padding: 10px;
-    background: #2d3f5d;
-    border-radius: 16px;
-  }
-  &__head {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    & a {
-      display: flex;
-      align-items: center;
-    }
-  }
-  &__close {
-    cursor: pointer;
-    background: #2d3f5d;
-    border: none;
-    & img {
-      width: 30px;
-      position: relative;
-      top: -25px;
-    }
-  }
 }
-
-.profil {
+.publication-display {
+  padding: 10px;
+  background: #2d3f5d;
+  border-radius: 16px;
+}
+.publication-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+.publication-profil {
   display: flex;
   align-items: center;
   &__link { 
@@ -399,15 +381,24 @@ export default {
     margin-right: 20px;
     color: black;
   }
-  &__date {
-    color: white;
-    font-size: 19px;
-    margin-top: 9px;
+}
+.publication-date {
+  color: white;
+  font-size: 19px;
+  margin-top: 9px;
+}
+.publication-close {
+  padding: 0;
+  cursor: pointer;
+  background: #2d3f5d;
+  border: none;
+  &__img {
+    width: 30px;
+    position: relative;
+    top: -25px;
   }
 }
-
-
-.content {
+.publication-content {
   padding: 1%;
   background-color: white;
   border-radius: 0px 0px 10px 10px;
@@ -417,27 +408,26 @@ export default {
   &__attachement {
     width: 100%;
   }
-  &__footer {
-    color: #909090;
-    font-size: 28px;
+}
+.publication-footer {
+  font-size: 28px;
+  display: flex;
+  margin: 5px 0px;
+  color: #909090;
+  justify-content: space-between;
+  & div {
     display: flex;
-    margin: 5px 0px;
-    justify-content: space-between;
-    & div {
-      display: flex;
-      align-items: center;
-    }
-    & img {
-      width: 35px;
-      margin-right: 15px;
-    }
+    align-items: center;
+  }
+  & img {
+    width: 35px;
+    margin-right: 15px;
   }
 }
-.like {
-  display: flex;
+.publication-like {
   width: 30%;
   justify-content: space-between;
-  & button {
+  &__btn {
     cursor: pointer;
     border: none;
     background-color: white;
@@ -448,18 +438,33 @@ a {
   text-decoration: none;
   color: black;
 }
-
-.form {
-  font-size: 20px;
-  padding: 2%;
-  background-color: white;
-  border: 2px solid #909090;
-  &__wrap {
-    font-family: "Roboto-Regular";
-    padding: 4%;
+.respond {
+  display: flex;
+  justify-content: flex-end;
+  &__btn {
+    border-radius: 30px;
+    padding: 1%;
+    margin-top: 10px;
+    background-color: white;
+    font-size: 20px;
   }
 }
-.content {
+.form-btn-close {
+  position: absolute;
+  left: -99999rem;
+}
+.form-comment-wrap {
+  font-size: 20px;
+  padding: 5%;
+  margin-top: 10px;
+  background-color: white;
+  border: 2px solid #909090;
+  border-radius: 70px;
+}
+.form-comment-display {
+  &__hidde-label {
+  display: none;
+  }
   &__textarea {
     font-family: "Roboto-Regular";
     font-size: 25px;
@@ -467,7 +472,6 @@ a {
     padding: 5px;
     margin-bottom: 10px;
     box-sizing: border-box;
-    height: 45px;
   }
   &__error {
     display: block;
@@ -476,41 +480,241 @@ a {
     color: red;
   }
   &__attachement {
-    width: 100%;
-    height: 400px;
-    object-fit: cover;
+    width: 25%;
   }
 }
-.footer__wrap {
+.form-comment-footer {
   margin: 25px 0px 0px;
   display: flex;
   justify-content: space-between;
 }
-.add_file {
+.form-comment-add-file {
   color: #577DDD;
   font-size: 30px;
-  & label {
+  &__label {
     cursor: pointer;
     display: flex;
     align-items: center;
-    & img {
-      width: auto;
-      height: 47px;
-      margin-left: 15px;
-    }
   }
-  & input {
+  &__img {
+    width: auto;
+    height: 47px;
+    margin-left: 15px;
+  }
+  &__input {
     position: absolute;
     left: -99999rem;
   }
 }
-.validate {
+.form-comment-validate {
   cursor: pointer;
   border: none;
   padding: 0;
   background-color: white;
-  & img {
+  &__img {
     height: 47px;
+  }
+}
+@media (min-width: 1904px) {
+  .home {
+    padding-left: 250px;
+  }
+  .publication {
+    padding-top: 170px;
+    font-size: 40px;
+    width: 50%;
+  }
+  .publication-profil {
+    &__avatar {
+      border-radius: 100px;
+      width: 100px;
+      height: 100px;
+    }
+  }
+  .publication-date {
+    font-size: 26px;
+  }
+  .publication-close__img {
+    width: 35px;
+    top: -35px;
+  }
+  .publication-footer {
+    font-size: 30px;
+    & img {
+      width: 40px;
+    }
+  }
+  .publication-like {
+    width: 25%;
+  }
+  .respond__btn {
+    font-size: 25px;
+  }
+  .form-comment-display__textarea {
+    font-size: 40px;
+  }
+  .form-comment-add-file {
+    font-size: 40px;
+  }
+}
+@media (min-width: 1264px) AND (max-width: 1904px) {
+  .home {
+    padding-left: 100px;
+  }
+  .publication-close__img {
+    width: 27px;
+    top: -27px;
+  }
+  .form-comment-display__textarea {
+    font-size: 30px;
+  }
+  .form-comment-add-file {
+    font-size: 30px;
+  }
+}
+@media (min-width: 960px) AND (max-width: 1264px) {
+  .home {
+    padding-left: 50px;
+  }
+  .publication {
+    font-size: 25px;
+  }
+  .publication-profil__avatar {
+    border-radius: 70px;
+    width: 70px;
+    height: 70px;
+  }
+  .publication-date {
+    font-size: 14px;
+  }
+  .publication-close__img {
+    width: 25px;
+    top: -24px;
+  }
+  .publication-footer {
+    font-size: 20px;
+    & img {
+      width: 25px;
+    }
+  }
+  .respond__btn {
+    font-size: 15px;
+  }
+  .form-comment-wrap {
+    border-radius: 40px;
+  }
+  .form-comment-display__textarea {
+    font-size: 25px;
+  }
+  .form-comment-add-file {
+    font-size: 25px;
+    &__img {
+      height: 40px;
+    }
+  }
+  .form-comment-validate__img {
+    height: 40px;
+  }
+}
+@media (min-width: 600px) AND (max-width: 960px) {
+  .home {
+    padding-left: 50px;
+  }
+  .publication {
+    font-size: 18px;
+  }
+  .publication-profil__avatar {
+    margin-right: 15px;
+    border-radius: 60px;
+    width: 60px;
+    height: 60px;
+  }
+  .publication-date {
+    font-size: 11px;
+    margin-top: 5px;
+  }
+  .publication-close__img {
+    width: 18px;
+    top: -22px;
+  }
+  .publication-footer {
+    font-size: 15px;
+    & img {
+      width: 20px;
+      margin-right: 5px;
+    }
+  }
+  .respond__btn {
+    font-size: 10px;
+  }
+  .form-comment-wrap {
+    border-radius: 40px;
+  }
+  .form-comment-display__textarea {
+    font-size: 18px;
+  }
+  .form-comment-add-file {
+    font-size: 18px;
+    &__img {
+      height: 30px;
+    }
+  }
+  .form-comment-validate__img {
+    height: 30px;
+  }
+}
+@media (max-width: 600px) {
+  .home {
+    padding-left: 0px;
+  }
+  .publication {
+    width: 100%;
+    padding-top: 25px;
+    padding-bottom: 0px;
+    font-size: 17px
+  }
+  .publication-profil__avatar {
+    margin-right: 10px;
+    border-radius: 45px;
+    width: 45px;
+    height: 45px;
+  }
+  .publication-date {
+    font-size: 11px;
+    margin-top: 5px;
+    white-space: nowrap;
+  }
+  .publication-close__img {
+    width: 18px;
+    top: -18px;
+  }
+  .publication-footer {
+    font-size: 15px;
+    & img {
+      width: 20px;
+      margin-right: 5px;
+    }
+  }
+  .publication-like {
+    width: 35%;
+  }
+  .respond__btn {
+    font-size: 10px;
+  }
+  .form-comment-wrap {
+    border-radius: 35px;
+  }
+  .form-comment-display__textarea {
+    font-size: 17px;
+  }
+  .form-comment-add-file {
+    font-size: 17px;
+    &__img {
+      height: 25px;
+    }
+  }
+  .form-comment-validate__img {
+    height: 25px;
   }
 }
 </style>
