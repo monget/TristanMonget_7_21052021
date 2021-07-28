@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="display">
     <Header/>
     <router-view/>
     <FooterAside/>
@@ -32,8 +32,12 @@ export default {
 body {
   background-color: rgba(209, 209, 209, 0.65);
   font-family: "Roboto-Thin";
-  width: 100%;
   margin: 0;
+}
+.display {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
 }
 </style>
 
