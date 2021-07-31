@@ -1,8 +1,14 @@
 <template>
-  <div class="display">
-    <Header/>
-    <router-view/>
-    <FooterAside/>
+  <div>
+    <div id="turn">
+      <h1>Cette application est prévu pour être utilisé en mode portrait.</h1>
+      <p>Merci de tourner votre smarthpone</p>
+    </div>
+    <div id="display">
+      <Header/>
+      <router-view/>
+      <FooterAside/>
+    </div>
   </div>
 </template>
 
@@ -34,10 +40,40 @@ body {
   font-family: "Roboto-Thin";
   margin: 0;
 }
-.display {
+#display {
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr auto;
+}
+@media (min-width: 850px) {
+  #turn {
+    display: none;
+  }
+}
+@media (max-width: 850px) and (orientation:landscape){
+  #turn {
+    display: block;
+    text-align: center;
+    position: relative;
+    top: 50%;
+    transform: translateY(50%);
+    width: 90%;
+    margin: auto;
+    & p {
+      font-size: 25px;
+    }
+  }
+  #display {
+    display: none;
+  }
+}
+@media (max-width: 850px) and (orientation:portrait){
+  #turn {
+    display: none;
+  }
+  #display {
+    display: grid;
+  }
 }
 </style>
 
