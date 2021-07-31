@@ -1,4 +1,5 @@
-# Groupomania # ![Groupomania](icons/icon-left-font-monochrome-black.png)
+<img src="icons/icon-left-font-monochrome-black.png" width="200px" />
+# Groupomania #
 
 This is the Project 7 of the Junior Web Developer path of Tristan Monget.
 
