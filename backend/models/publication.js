@@ -18,6 +18,10 @@ module.exports = (sequelize, Sequelize) => {
     dislike: {
       type: Sequelize.INTEGER,
       defaultValue: 0
+    },
+    desactived: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false
     }
   });
 

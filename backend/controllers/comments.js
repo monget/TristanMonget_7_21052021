@@ -35,6 +35,7 @@ exports.create = (req, res, next) => {
 							disliked: false,
 							liked: false
 						},
+						desactived: comment.dataValues.desactived,
 						createdAt: comment.dataValues.createdAt,
 						updatedAt: comment.dataValues.updatedAt,
 						userId: comment.dataValues.userId,
@@ -91,14 +92,17 @@ exports.delete = (req, res, next) => {
 					else {
 						Comment.update({
 							message: "Ce contenu n'est plus disponible.",
-							attachement: null
+							attachement: null,
+							like: 0,
+							dislike: 0,
+							desactived: true,
 							},
 							{ where: { id: req.params.id }
 						})
 							.then(() => res.status(200).json({
 								message: "Ce contenu n'est plus disponible.",
 								attachement: null,
-								disactive: true
+								desactived: true
 								}
 							))
 							.catch(err => res.status(400).json({ message: err.message }));

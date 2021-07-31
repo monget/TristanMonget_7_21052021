@@ -5,7 +5,7 @@
         <div class="delete-title" aria-label="opération définitive">
           Cette opération est définitive !
         </div>
-        <p class="delete-information">Vous confirmez la suppresion de votre {{ message }} ?</p>
+        <p class="delete-information">Vous confirmez la suppression de votre {{ message }} ?</p>
         <div class="delete-footer">
           <button class="delete-btn" aria-label="fermer la fenêtre de suppression" @click="close()">
             <img class="delete-btn__img" alt="croix" src="../assets/icons/times-solid-red.svg">
@@ -66,7 +66,7 @@ export default {
       else if (value == 'publication') {
         PublicationDataService.delete(this.id)
           .then(response => {
-            if (response.data.disactive === true) {
+            if (response.data.desactived === true) {
               this.$emit('disactive-publication', response.data)
               this.$emit('closing-popup-delete', false)
             }
@@ -82,7 +82,7 @@ export default {
       else if (value == 'commentaire') {
         CommentDataService.delete(this.id)
           .then(response => {
-            if (response.data.disactive === true) {
+            if (response.data.desactived === true) {
               this.$emit('disactive-comment', response.data)
               this.$emit('closing-popup-delete', false)
             }

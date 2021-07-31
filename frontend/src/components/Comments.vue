@@ -7,8 +7,8 @@
             <img class="comment-profil__avatar" :src="comment.avatar" :alt="'avatar ' + comment.commentedBy"> 
           </router-link>
         </div>
-        <div class="comment-options" aria-label="options du commentaire" v-if="creatorComment(comment.userId)">
-          <button class="comment-options__btn" aria-label="modifier le commentaire" v-if="rules(comment.userId)" @click="showEdit(comment.id, comment.message, comment.attachement, index)">
+        <div class="comment-options" aria-label="options du commentaire" v-if="creatorComment(comment.userId, comment.desactived)">
+          <button class="comment-options__btn comment-options__btn--margin" aria-label="modifier le commentaire" v-if="rules(comment.userId)" @click="showEdit(comment.id, comment.message, comment.attachement, index)">
             <img class="comment-options__img" alt="modifier" src="../assets/icons/edit-solid.svg">
           </button>
           <button class="comment-options__btn" aria-label="supprimer le commentaire" @click="showDelete(comment.id, index)">
@@ -28,7 +28,7 @@
             </p>
             <img class="comment-content__attachement" :alt="'contenu du commentaire ' + comment.commentedBy" v-if="comment.attachement" :src="comment.attachement">
           </div>
-          <div class="comment-footer" aria-label="likes">
+          <div class="comment-footer" aria-label="likes" v-if="!comment.desactived">
             <div class="comment-like">
               <div aria-label="j'aime">
                 <button class="comment-like__btn" aria-label="bouton j'aime" @click="liked(comment.id, index, comment.stateLike)">
@@ -66,9 +66,12 @@ export default {
     formatDate(date) {
       return formatDistance(subDays(new Date(date), 0), new Date(), { locale: fr })
     },
-    creatorComment(userId) {
+    creatorComment(userId, desactived) {
       let user = JSON.parse(localStorage.getItem('user'));
-      if (user.Id === userId || user.isAdmin === true) {
+      if (desactived == true) {
+        return false
+      }
+      else if (user.Id === userId || user.isAdmin === true) {
         return true
       }
       return false
@@ -220,11 +223,14 @@ export default {
 .comment-options {
   width: 15%;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   &__btn {
     cursor: pointer;
     background: none;
     border: none;
+    &--margin {
+      margin-right: 30%;
+    }
   }
   &__img {
     top: -30px;

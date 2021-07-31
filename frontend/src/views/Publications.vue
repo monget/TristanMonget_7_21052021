@@ -28,9 +28,7 @@
             <span>Meilleure publication</span>
             <router-link class="best__link" :to="'publication/' + topPublication.id">
               <img class="best__avatar" alt="avatar de la meilleure publication" :src="topPublication.avatar">
-              <div class="best__message"> 
-                {{ topPublication.message }}
-              </div>
+              <div class="best__message"> {{ topPublication.message }} </div>
             </router-link>
           </div>
           <div class="horizontal-line"></div>
@@ -68,23 +66,22 @@
               </router-link>
               <span class="publication-date">.{{ formatDate(publication.createdAt) }}</span>
             </div>
-            <div class="publication-options" aria-label="options de la publication" v-if="CreatorPublication(publication.userId)">
-              <button class="publication-options__button" aria-label="modifier la publication" v-if="rules(publication.userId)" @click="showEdit(publication.id, publication.message, publication.attachement, index)">
+            <div class="publication-options" aria-label="options de la publication" v-if="CreatorPublication(publication.userId, publication.desactived)">
+              <button class="publication-options__btn publication-options__btn--margin" aria-label="modifier la publication" v-if="rules(publication.userId)" @click="showEdit(publication.id, publication.message, publication.attachement, index)">
                 <img class="publication-options__img" alt="modifier" src="../assets/icons/edit-solid.svg">
               </button>
-              <button class="publication-options__button" aria-label="supprimer la publication" @click="showDelete(publication.id, index)">
+              <button class="publication-options__btn" aria-label="supprimer la publication" @click="showDelete(publication.id, index)">
                 <img class="publication-options__img" alt="poubelle" src="../assets/icons/trash-alt-solid.svg">
               </button>
             </div>
           </div>
           <div class="publication-content">
-            <router-link aria-label="contenu de la publication" :to="'publication/' + publication.id">
-              <p class="publication-content__message" v-if="publication.message" >
-                {{ publication.message }}
-              </p>
+            <router-link aria-label="contenu de la publication" :to="'publication/' + publication.id" v-if="!publication.desactived">
+              <p class="publication-content__message" v-if="publication.message"> {{ publication.message }} </p>
               <img class="publication-content__attachement publication-content__attachement--reduce" :alt="'contenu de la publication ' + publication.publishedBy" v-if="publication.attachement" :src="publication.attachement">
             </router-link>
-            <div class="publication-footer" aria-label="likes et commentaires">
+            <p class="publication-content__message" v-else> {{ publication.message }} </p>
+            <div class="publication-footer" aria-label="likes et commentaires" v-if="!publication.desactived">
               <div class="publication-like">
                 <div aria-label="j'aime">
                   <button class="publication-like__btn" aria-label="bouton j'aime" @click="liked(publication.id, index, publication.stateLike)">
@@ -204,9 +201,12 @@ export default {
         this.userAvatar = this.newAvatar
       }
     },
-    CreatorPublication(userId) {
+    CreatorPublication(userId, desactived) {
       let user = JSON.parse(localStorage.getItem('user'));
-      if (user.Id === userId || user.isAdmin === true) {
+      if (desactived == true) {
+        return false
+      }
+      else if (user.Id === userId || user.isAdmin === true) {
         return true
       }
       return false
@@ -323,6 +323,7 @@ export default {
     disactivePublication(data){
       this.publications[this.publicationDelete.index].message = data.message
       this.publications[this.publicationDelete.index].attachement = data.attachement
+      this.publications[this.publicationDelete.index].desactived = data.desactived
     },
     deletePublication() {
       this.publications.splice(this.publicationDelete.index, 1)
@@ -427,11 +428,14 @@ export default {
 .publication-options {
   width: 15%;
   display: flex;
-  justify-content: space-between;
-  &__button {
+  justify-content: flex-end;
+  &__btn {
     cursor: pointer;
     background: #2d3f5d;
     border: none;
+    &--margin {
+      margin-right: 30%;
+    }
   }
   &__img {
     position: relative;

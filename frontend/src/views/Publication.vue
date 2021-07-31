@@ -159,6 +159,9 @@ export default {
     setup(id) {
       PublicationDataService.findOne(id)
         .then(response => {
+          if (response.data.desactived == true) {
+            this.$router.push('/404')
+          }
           this.publication = response.data,
           this.createdAt = response.data.createdAt
           this.state = {
@@ -316,6 +319,7 @@ export default {
     disactiveComment(data){
       this.publication.comments[this.commentDelete.index].message = data.message
       this.publication.comments[this.commentDelete.index].attachement = data.attachement
+      this.publication.comments[this.commentDelete.index].desactived = data.desactived
     },
     commentDeleteData(data) {
       this.commentDelete = data

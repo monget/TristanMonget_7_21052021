@@ -35,6 +35,7 @@ exports.create = (req, res, next) => {
 							disliked: false,
 							liked: false
 						},
+						desactived: publication.dataValues.desactived,
 						createdAt: publication.dataValues.createdAt,
 						updatedAt: publication.dataValues.updatedAt,
 						userId: publication.dataValues.userId,
@@ -92,14 +93,17 @@ exports.delete = (req, res, next) => {
 					else {
 						Publication.update({
 							message: "Ce contenu n'est plus disponible.",
-							attachement: null
+							attachement: null,
+							like: 0,
+							dislike: 0,
+							desactived: true,
 							},
 							{ where: { id: req.params.id }
 						})
 							.then(() => res.status(200).json({
 								message: "Ce contenu n'est plus disponible.",
 								attachement: null,
-								disactive: true
+								desactived: true
 								}
 							))
 							.catch(err => res.status(400).json({ message: err.message }));
@@ -150,6 +154,7 @@ exports.findOne = (req, res, next) => {
 							like: publication.dataValues.like,
 							dislike: publication.dataValues.dislike,
 							stateLike: statePublicationLike,
+							desactived: publication.dataValues.desactived,
 							createdAt: publication.dataValues.createdAt,
 							updatedAt: publication.dataValues.updatedAt,
 							userId: publication.dataValues.userId,
@@ -185,6 +190,7 @@ exports.findOne = (req, res, next) => {
 												like: comment.dataValues.like,
 												dislike: comment.dataValues.dislike,
 												stateLike: stateCommentLike,
+												desactived: comment.dataValues.desactived,
 												createdAt: comment.dataValues.createdAt,
 												userId: comment.dataValues.userId,
 												commentedBy: user.dataValues.pseudo,
@@ -200,6 +206,7 @@ exports.findOne = (req, res, next) => {
 													like: publication.dataValues.like,
 													dislike: publication.dataValues.dislike,
 													stateLike: statePublicationLike,
+													desactived: publication.dataValues.desactived,
 													createdAt: publication.dataValues.createdAt,
 													updatedAt: publication.dataValues.updatedAt,
 													userId: publication.dataValues.userId,
@@ -258,6 +265,7 @@ exports.findAll = (req, res, next) => {
 							like: publication.dataValues.like,
 							dislike: publication.dataValues.dislike,
 							stateLike: statePublicationLike,
+							desactived: publication.dataValues.desactived,
 							createdAt: publication.dataValues.createdAt,
 							updatedAt: publication.dataValues.updatedAt,
 							userId: publication.dataValues.userId,
