@@ -23,7 +23,7 @@
                 </div>
                 <div aria-label="Valider la publication">
                   <button class="form-publish-validate" type="submit">
-                    <img class="form-publish-validate__img" alt="avion en papier vert" src="../assets/icons/paper-plane-regular.svg">
+                    <img class="form-publish-validate__img" alt="avion en papier vert" title="valider" src="../assets/icons/paper-plane-regular.svg">
                   </button>
                 </div>
               </div>
