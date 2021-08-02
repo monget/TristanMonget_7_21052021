@@ -9,10 +9,10 @@
         </div>
         <div class="comment-options" aria-label="options du commentaire" v-if="creatorComment(comment.userId, comment.desactived)">
           <button class="comment-options__btn comment-options__btn--margin" aria-label="modifier le commentaire" v-if="rules(comment.userId)" @click="showEdit(comment.id, comment.message, comment.attachement, index)">
-            <img class="comment-options__img" alt="modifier" src="../assets/icons/edit-solid.svg">
+            <img class="comment-options__img" alt="modifier" title="modifier" src="../assets/icons/edit-solid.svg">
           </button>
           <button class="comment-options__btn" aria-label="supprimer le commentaire" @click="showDelete(comment.id, index)">
-            <img class="comment-options__img" alt="poubelle" src="../assets/icons/trash-alt-solid.svg">
+            <img class="comment-options__img" alt="poubelle" title="supprimer" src="../assets/icons/trash-alt-solid.svg">
           </button>
         </div>
       </div>
