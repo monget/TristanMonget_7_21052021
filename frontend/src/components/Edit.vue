@@ -23,7 +23,7 @@
                 </div>
                 <div aria-label="Valider la modification">
                   <button class="form-edit-validate" type="submit">
-                    <img class="form-edit-validate__img" alt="avion en papier vert" src="../assets/icons/paper-plane-regular.svg">
+                    <img class="form-edit-validate__img" alt="avion en papier vert" title="valider" src="../assets/icons/paper-plane-regular.svg">
                   </button>
                 </div>
               </div>

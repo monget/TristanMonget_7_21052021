@@ -8,10 +8,10 @@
         <p class="delete-information">Vous confirmez la suppression de votre {{ message }} ?</p>
         <div class="delete-footer">
           <button class="delete-btn" aria-label="fermer la fenêtre de suppression" @click="close()">
-            <img class="delete-btn__img" alt="croix" src="../assets/icons/times-solid-red.svg">
+            <img class="delete-btn__img" alt="croix" title="annuler" src="../assets/icons/times-solid-red.svg">
           </button>
           <button class="delete-btn" aria-label="valider la suppression" @click="deleted(message)">
-            <img class="delete-btn__img" alt="coche valider verte" src="../assets/icons/check-solid.svg">
+            <img class="delete-btn__img" alt="coche valider verte" title="valider" src="../assets/icons/check-solid.svg">
           </button>
         </div>
       </div>
