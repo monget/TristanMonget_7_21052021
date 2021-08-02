@@ -13,10 +13,6 @@ class CommentDataService {
     return http.delete(`/comments/${id}`);
   }
 
-  findOne(id) {
-    return http.get(`/comments/${id}`);
-  }
-
   like(id, data) {
     return http.post(`/comments/${id}/like`, data);
   }

@@ -9,25 +9,21 @@
             <input class="form-content__input" id="pseudo" type="text" name="pseudo" minlength="3" maxlength="12" placeholder="De 3 à 12 caractères" aria-describedby="pseudo_error" aria-required="true" v-model.trim="pseudo"/>
             <span class="form-content__error" id="pseudo_error">{{ errors[0] }}</span>
           </ValidationProvider>
-
           <ValidationProvider aria-label="mot de passe" name="mot de passe" rules="required:@mot de passe|min:8|regex" v-slot="{ errors }">
             <label class="form-content__label" for="password">Mot de passe :</label>
             <input class="form-content__input" type="password" id="password" name="password" minlength="8" placeholder="Au moins 8 caractères" aria-describedby="password_error" aria-required="true" v-model="password"/>
             <span class="form-content__error" id="password_error">{{ errors[0] }}</span>
           </ValidationProvider>
-
           <ValidationProvider aria-label="confirmer le mot de passe" name="ConfirmPassword" rules="ifexist:@mot de passe|requiredConfirmPassword|confirm_password:@mot de passe"  v-slot="{ errors }">
             <label class="form-content__label" for="confirm_password">Confirmez le mot de passe :</label>
             <input class="form-content__input" type="password" id="confirm_password" name="confirm_password" aria-describedby="confirm_password_error" aria-required="true" v-model="confirm_password"/>
             <span class="form-content__error" id="confirm_password_error">{{ errors[0] }}</span>
           </ValidationProvider>
-
           <ValidationProvider aria-label="email" vid="email" name="email" rules="required:@email|email" v-slot="{ errors }">
             <label class="form-content__label" for="email">Adresse email :</label>
             <input class="form-content__input" type="email" id="email" name="email" aria-describedby="email_error" aria-required="true" v-model="email"/>
             <span class="form-content__error" id="email_error">{{ errors[0] }}</span>
           </ValidationProvider>
-
           <button class="form-submit" aria-label="valider l'inscription" type="submit">Valider</button>
           <span aria-label="déjà un compte">Déjà un compte ? <router-link to="/connection">Connectez-vous</router-link></span>
         </p>

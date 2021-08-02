@@ -33,7 +33,7 @@
               <span class="publication-date">.{{ formatDate(createdAt) }}</span>
             </div>
             <button class="publication-close" aria-label="fermer la publication" @click="close()">
-              <img class="publication-close__img" alt="croix" src="../assets/icons/times-solid.svg">
+              <img class="publication-close__img" alt="croix" title="fermer" src="../assets/icons/times-solid.svg">
             </button>
           </div>
           <div class="publication-content">
@@ -149,11 +149,6 @@ export default {
   },
   beforeMount() {
     this.setup(this.$route.params.id);
-  },
-  mounted() {
-    this.$nextTick(() => {
-      this.$el.setAttribute("style", "height", `${this.$el.scrollHeight}px`);
-    });
   },
   methods: {
     setup(id) {

@@ -9,13 +9,11 @@
               <input class="form-content__input" type="text" id="pseudo" name="pseudo" aria-describedby="pseudo_error" aria-required="true" v-model.trim="pseudo"/>
               <span class="form-content__error" id="pseudo_error">{{ errors[0] }}</span>
             </ValidationProvider>
-
             <ValidationProvider aria-label="mot de passe" ref="error" vid="mot de passe" name="mot de passe" rules="required:@mot de passe" v-slot="{ errors }">
               <label class="form-content__label" for="mot de passe">Mot de passe :</label>
               <input class="form-content__input" type="password" id="mot de passe" name="mot de passe" aria-describedby="password_error" aria-required="true" v-model="password"/>
               <span class="form-content__error" id="password_error">{{ errors[0] }}</span>
             </ValidationProvider>
-
             <button class="form-submit" aria-label="se connecter" type="submit">Valider</button>
             <span aria-label="pas encore de compte">Pas encore de compte ? <router-link to="/registration">Inscrivez-vous</router-link></span>
           </p>

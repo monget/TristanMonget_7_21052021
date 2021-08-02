@@ -28,7 +28,7 @@
             <span>Meilleure publication</span>
             <router-link class="best__link" :to="'publication/' + topPublication.id">
               <img class="best__avatar" alt="avatar de la meilleure publication" :src="topPublication.avatar">
-              <div class="best__message"> {{ topPublication.message }} </div>
+              <div class="best__message"> {{ topPublication.message ? topPublication.message : topContributor.name }} </div>
             </router-link>
           </div>
           <div class="horizontal-line"></div>
@@ -38,9 +38,7 @@
             </span>
             <router-link class="best__link" :to="'profil/' + topContributor.id">
               <img class="best__avatar" alt="avatar du meilleur contributeur" :src="topContributor.avatar">
-              <div class="best__message"> 
-                {{ topContributor.name }}
-              </div>
+              <div class="best__message"> {{ topContributor.name }} </div>
             </router-link>
           </div>
         </div>
@@ -68,17 +66,17 @@
             </div>
             <div class="publication-options" aria-label="options de la publication" v-if="CreatorPublication(publication.userId, publication.desactived)">
               <button class="publication-options__btn publication-options__btn--margin" aria-label="modifier la publication" v-if="rules(publication.userId)" @click="showEdit(publication.id, publication.message, publication.attachement, index)">
-                <img class="publication-options__img" alt="modifier" src="../assets/icons/edit-solid.svg">
+                <img class="publication-options__img" alt="modifier" title="modifier" src="../assets/icons/edit-solid.svg">
               </button>
               <button class="publication-options__btn" aria-label="supprimer la publication" @click="showDelete(publication.id, index)">
-                <img class="publication-options__img" alt="poubelle" src="../assets/icons/trash-alt-solid.svg">
+                <img class="publication-options__img" alt="poubelle" title="supprimer" src="../assets/icons/trash-alt-solid.svg">
               </button>
             </div>
           </div>
           <div class="publication-content">
             <router-link aria-label="contenu de la publication" :to="'publication/' + publication.id" v-if="!publication.desactived">
               <p class="publication-content__message" v-if="publication.message"> {{ publication.message }} </p>
-              <img class="publication-content__attachement publication-content__attachement--reduce" :alt="'contenu de la publication ' + publication.publishedBy" v-if="publication.attachement" :src="publication.attachement">
+              <img id="imgresize" class="publication-content__img" :alt="'contenu de la publication ' + publication.publishedBy" v-if="publication.attachement" :src="publication.attachement">
             </router-link>
             <p class="publication-content__message" v-else> {{ publication.message }} </p>
             <div class="publication-footer" aria-label="likes et commentaires" v-if="!publication.desactived">
@@ -167,21 +165,24 @@ export default {
             }
             contributors.push(data)
           });
+          // retourne l'index le plus liké
           const indexOfMaxValue = countlikes.indexOf(Math.max(...countlikes));
           this.topPublication = this.publications[indexOfMaxValue]
 
+          // compte le nombre d'occurence pour chaque id
           let occurrences = contributorsId.reduce(function(obj, item) {
             obj[item] = (obj[item] || 0) + 1;
             return obj;
           }, {});
           let nbOfContribution = 0
           let contributorId = ''
-          for (const property in occurrences) {
+          for (const property in occurrences) { // recherche la valeur la plus élevé des occurrences
             if (`${occurrences[property]}` > nbOfContribution) {
               nbOfContribution = `${occurrences[property]}`
-              contributorId = `${property}`
+              contributorId = `${property}` // retourne la clé (id) avec le plus d'occurrence
             }
           }
+          // trouve l'id correspondant dans array contributors
           const resultat = contributors.find(contributor => contributor.id == contributorId);
           this.topContributor = resultat
         })
@@ -454,15 +455,12 @@ export default {
     -webkit-line-clamp: 2;
     overflow: hidden;
   }
-  &__attachement {
+  &__img {
+    margin: auto;
+    transition: height 1s ease-in-out;
     width: 100%;
-    &--reduce {
-      height: 400px;
-      object-fit: cover;
-      &:hover {
-        height: initial;
-      }
-    }
+    height: 400px;
+    object-fit: cover;
   }
 }
 .publication-footer {
@@ -576,8 +574,8 @@ a {
   .publication-date {
     font-size: 26px;
   }
-  .publication-content__attachement--reduce {
-    height: 500px;
+  .publication-content__img {
+    height: 600px;
     object-position: 0px 10%;
   }
   .publication-footer {
@@ -663,7 +661,7 @@ a {
       height: 25%;
     }
   }
-  .publication-content__attachement--reduce {
+  .publication-content__img {
     height: auto;
   }
   .publication-footer {
@@ -720,7 +718,7 @@ a {
       top: -20px;
     }
   }
-  .publication-content__attachement--reduce {
+  .publication-content__img {
     height: auto;
   }
   .publication-footer {

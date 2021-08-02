@@ -121,12 +121,6 @@ exports.delete = (req, res, next) => {
 		.catch(error => res.status(400).json({ error }));
 };
 
-exports.findOne = (req, res, next) => {
-  Comment.findByPk(req.params.id, {	attributes: { exclude: ['updatedAt'] } })
-		.then(comment => res.status(200).json(comment))
-		.catch(err => res.status(500).send({ message: err.message }));
-};
-
 exports.findAll = (req, res, next) => {
   Comment.findAll(
 		{	attributes: { exclude: ['updatedAt'] },
